@@ -211,5 +211,16 @@ void main() {
       expect(
           service.currentWeek(now.subtract(const Duration(days: 100))), 15);
     });
+
+    test('loadShowNonCurrentWeekCourses 默认为 true，保存后可正确读取', () async {
+      final service = await createService();
+      expect(await service.loadShowNonCurrentWeekCourses(), isTrue);
+
+      await service.saveShowNonCurrentWeekCourses(false);
+      expect(await service.loadShowNonCurrentWeekCourses(), isFalse);
+
+      await service.saveShowNonCurrentWeekCourses(true);
+      expect(await service.loadShowNonCurrentWeekCourses(), isTrue);
+    });
   });
 }

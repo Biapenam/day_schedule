@@ -26,6 +26,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
   int _dailySections = 12;
   int _sectionDuration = 45;
   List<String> _sectionStartTimes = [];
+  bool _showNonCurrentWeekCourses = true;
   bool _loading = true;
   bool _saving = false;
   bool _addingWidget = false;
@@ -45,6 +46,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
     final duration = schedule?.sectionDuration ?? 45;
     final times =
         schedule?.sectionStartTimes ?? await _service.loadSectionStartTimes();
+    final showNonCurrent = await _service.loadShowNonCurrentWeekCourses();
     if (!mounted) return;
     setState(() {
       _scheduleName = schedule?.name ?? '我的课表';
@@ -53,6 +55,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
       _dailySections = sections;
       _sectionDuration = duration;
       _sectionStartTimes = times;
+      _showNonCurrentWeekCourses = showNonCurrent;
       _loading = false;
     });
   }
@@ -171,8 +174,16 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 padding: const EdgeInsets.all(20),
                 children: const [
                   _ChangelogEntry(
-                    version: 'v1.1.3',
+                    version: 'v1.1.4',
                     isLatest: true,
+                    changes: [
+                      '新增了显示非本周课程的功能',
+                    ],
+                  ),
+                  SizedBox(height: 16),
+                  _ChangelogEntry(
+                    version: 'v1.1.3',
+                    isLatest: false,
                     changes: [
                       '使用吃白饭的蓝色大肥鱼修复了一些已知问题、优化了使用体验和性能开销',
                     ],
@@ -276,6 +287,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
       await _service.saveDailySections(_dailySections);
       await _service.saveSectionDuration(_sectionDuration);
       await _service.saveSectionStartTimes(_sectionStartTimes);
+      await _service.saveShowNonCurrentWeekCourses(_showNonCurrentWeekCourses);
       await WidgetService().updateWidget();
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
@@ -409,12 +421,14 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
                     // ── 学期信息 ──
                     _buildCard(
-                      title: '学期信息',
+                      title: '学期信息与显示',
                       icon: Icons.school_rounded,
                       children: [
                         _buildDateTile(),
                         const Divider(height: 1),
                         _buildWeeksTile(),
+                        const Divider(height: 1),
+                        _buildShowNonCurrentWeekTile(),
                       ],
                     ).animate().fadeIn(duration: 400.ms).slideY(begin: 0.2),
 
@@ -493,7 +507,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                       children: [
                         _buildInfoTile('应用名称', 'Open Schedule'),
                         const Divider(height: 1),
-                        _buildInfoTile('版本', '1.1.3 (11)'),
+                        _buildInfoTile('版本', '1.1.4'),
                         const Divider(height: 1),
                         _buildInfoTile('开发者', 'Sora'),
                         const Divider(height: 1),
@@ -710,6 +724,22 @@ class _SettingsScreenState extends State<SettingsScreen> {
         max: 30,
         onChanged: (v) => setState(() => _totalWeeks = v),
       ),
+    );
+  }
+
+  Widget _buildShowNonCurrentWeekTile() {
+    return SwitchListTile(
+      secondary: _iconBox(Icons.event_note_rounded),
+      title: const Text('显示非本周课程',
+          style: TextStyle(
+              fontSize: 14,
+              fontWeight: FontWeight.w600,
+              color: AppColors.textPrimary)),
+      subtitle: const Text('在当前周课表空位处显示其他周次课程',
+          style: TextStyle(fontSize: 12, color: AppColors.textSecondary)),
+      value: _showNonCurrentWeekCourses,
+      activeTrackColor: AppColors.primary,
+      onChanged: (v) => setState(() => _showNonCurrentWeekCourses = v),
     );
   }
 

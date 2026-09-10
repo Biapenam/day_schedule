@@ -138,4 +138,23 @@ void main() {
       expect(c.weeks, [1, 2]);
     });
   });
+
+  group('formatWeeksSummary 周次简短格式化', () {
+    test('连续周次合并为区间', () {
+      expect(Course.formatWeeksSummary([1, 2, 3, 4, 5]), '第1-5周');
+    });
+
+    test('多段连续区间以逗号分隔', () {
+      expect(Course.formatWeeksSummary([1, 2, 3, 7, 8]), '第1-3,7-8周');
+    });
+
+    test('单周与断续周次', () {
+      expect(Course.formatWeeksSummary([3]), '第3周');
+      expect(Course.formatWeeksSummary([2, 4, 6]), '第2,4,6周');
+    });
+
+    test('空列表返回空字符串', () {
+      expect(Course.formatWeeksSummary([]), '');
+    });
+  });
 }

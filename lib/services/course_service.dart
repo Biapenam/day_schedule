@@ -330,6 +330,19 @@ class CourseService {
     await saveScheduleMeta(s.copyWith(sectionDuration: minutes));
   }
 
+  // ─── 非本周课程显示设置 ──────────────────────────────────
+  static const _showNonCurrentWeekCoursesKey = 'show_non_current_week_courses';
+
+  Future<bool> loadShowNonCurrentWeekCourses() async {
+    final prefs = await SharedPreferences.getInstance();
+    return prefs.getBool(_showNonCurrentWeekCoursesKey) ?? true;
+  }
+
+  Future<void> saveShowNonCurrentWeekCourses(bool show) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setBool(_showNonCurrentWeekCoursesKey, show);
+  }
+
   // ─── 工具方法 ─────────────────────────────────────────────
 
   /// 计算当前周（真实值，不 clamp）。

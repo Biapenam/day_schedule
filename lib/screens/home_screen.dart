@@ -24,6 +24,8 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
   final CourseService _service = CourseService();
 
   Map<int, List<Course>> _coursesByWeek = {};
+  List<Course> _allCourses = [];
+  bool _showNonCurrentWeekCourses = true;
   int _currentWeek = 1; // 传给子组件：学期在范围内为真实值，否则为 -1
   int _selectedWeek = 1;
   int _totalWeeks = 20;
@@ -62,6 +64,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
     await _service.ensureMigrated();
     final schedule = await _service.getActiveSchedule();
     final courses = await _service.loadCourses();
+    final showNonCurrent = await _service.loadShowNonCurrentWeekCourses();
     final start = schedule?.semesterStart;
     final totalWeeks = schedule?.totalWeeks ?? 20;
     final dailySections = schedule?.dailySections ?? 12;
@@ -99,6 +102,8 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
     _pageController?.dispose();
     _pageController = PageController(initialPage: initialPage);
     setState(() {
+      _allCourses = courses;
+      _showNonCurrentWeekCourses = showNonCurrent;
       _coursesByWeek = _groupCoursesByWeek(courses, totalWeeks);
       _currentWeek = displayCurrentWeek;
       _selectedWeek = (initialPage + 1).clamp(1, totalWeeks);
@@ -120,8 +125,11 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
 
   Future<void> _refresh() async {
     final courses = await _service.loadCourses();
+    final showNonCurrent = await _service.loadShowNonCurrentWeekCourses();
     if (!mounted) return;
     setState(() {
+      _allCourses = courses;
+      _showNonCurrentWeekCourses = showNonCurrent;
       _coursesByWeek = _groupCoursesByWeek(courses, _totalWeeks);
     });
     WidgetService().updateWidget();
@@ -236,6 +244,9 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                               _coursesByWeek[week] ?? const <Course>[];
                           return ScheduleGrid(
                             courses: weekCourses,
+                            allCourses: _allCourses,
+                            showNonCurrentWeekCourses:
+                                _showNonCurrentWeekCourses,
                             isCurrentWeek: week == _currentWeek,
                             onCourseDeleted: _refresh,
                             onCourseEdited: _refresh,

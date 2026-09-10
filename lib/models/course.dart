@@ -37,6 +37,27 @@ class Course {
     return a.startSection <= b.endSection && a.endSection >= b.startSection;
   }
 
+  /// 将周次列表格式化为紧凑周次说明，如 [1, 2, 3, 4, 7, 8] -> "第1-4,7-8周"
+  static String formatWeeksSummary(List<int> weeks) {
+    if (weeks.isEmpty) return '';
+    final sorted = List<int>.from(weeks)..sort();
+    final parts = <String>[];
+    int start = sorted.first;
+    int prev = sorted.first;
+
+    for (int i = 1; i < sorted.length; i++) {
+      if (sorted[i] == prev + 1) {
+        prev = sorted[i];
+      } else {
+        parts.add(start == prev ? '$start' : '$start-$prev');
+        start = sorted[i];
+        prev = sorted[i];
+      }
+    }
+    parts.add(start == prev ? '$start' : '$start-$prev');
+    return '第${parts.join(',')}周';
+  }
+
   // 深拷贝修改
   Course copyWith({
     String? id,
