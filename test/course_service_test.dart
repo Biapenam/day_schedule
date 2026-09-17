@@ -135,6 +135,17 @@ void main() {
       expect(active!.id, schedules.first.id);
     });
 
+    test('active id 失效时课程读取也回退到第一个课表', () async {
+      final service = await createService();
+      final schedules = await service.loadSchedules();
+      await service.saveCoursesFor(schedules.first.id, [buildCourse()]);
+      await service.setActiveSchedule('不存在的id');
+
+      final courses = await service.loadCourses();
+      expect(courses.map((course) => course.id), ['c-1']);
+      expect(await service.getActiveScheduleId(), schedules.first.id);
+    });
+
     test('主课表数据损坏时从最近一次备份恢复', () async {
       final service = await createService();
       await service.createSchedule('课表A');

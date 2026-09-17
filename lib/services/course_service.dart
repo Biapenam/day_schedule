@@ -183,8 +183,20 @@ class CourseService {
 
   Future<String?> getActiveScheduleId() async {
     await ensureMigrated();
+    final schedules = await loadSchedules();
+    if (schedules.isEmpty) return null;
     final prefs = await SharedPreferences.getInstance();
-    return prefs.getString(_activeScheduleIdKey);
+    final storedId = prefs.getString(_activeScheduleIdKey);
+    if (storedId != null &&
+        schedules.any((schedule) => schedule.id == storedId)) {
+      return storedId;
+    }
+
+    // 修复缺失或失效的 active id，避免界面回退到第一张课表但课程仍按
+    // 无效 id 读取为空。
+    final fallbackId = schedules.first.id;
+    await prefs.setString(_activeScheduleIdKey, fallbackId);
+    return fallbackId;
   }
 
   /// 获取当前激活的课表。若 active id 失效则回退到第一个。
@@ -201,6 +213,9 @@ class CourseService {
 
   /// 切换当前激活课表
   Future<void> setActiveSchedule(String id) async {
+    await ensureMigrated();
+    final schedules = await loadSchedules();
+    if (!schedules.any((schedule) => schedule.id == id)) return;
     final prefs = await SharedPreferences.getInstance();
     await prefs.setString(_activeScheduleIdKey, id);
   }

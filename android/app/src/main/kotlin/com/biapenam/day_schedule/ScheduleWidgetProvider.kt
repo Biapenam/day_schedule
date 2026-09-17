@@ -10,7 +10,9 @@ import android.content.SharedPreferences
 import android.util.Log
 import android.widget.RemoteViews
 import org.json.JSONArray
+import org.json.JSONObject
 import java.util.Calendar
+import java.util.Locale
 
 class ScheduleWidgetProvider : AppWidgetProvider() {
 
@@ -80,14 +82,37 @@ class ScheduleWidgetProvider : AppWidgetProvider() {
                 "${month}月${day}日 · ${weekNames[flutterWeekday]}"
             )
 
-            // 课程数据由 Dart 侧 WidgetService 计算好当天课程后写入：
-            // HomeWidget.saveWidgetData('today_courses', json)
-            // 键值原样存储在 HomeWidgetPreferences 中，这里只负责解析渲染。
+            // Dart 侧预计算并写入按日期索引的课程缓存。跨日广播到达时，
+            // 原生端读取当天日期对应的数组，避免继续显示昨天的课程。
             val prefs: SharedPreferences = context.getSharedPreferences(
                 "HomeWidgetPreferences",
                 Context.MODE_PRIVATE
             )
-            val json = prefs.getString("today_courses", "[]") ?: "[]"
+            val dateKey = String.format(
+                Locale.US,
+                "%04d-%02d-%02d",
+                cal.get(Calendar.YEAR),
+                cal.get(Calendar.MONTH) + 1,
+                cal.get(Calendar.DAY_OF_MONTH)
+            )
+            val indexedJson = prefs.getString("widget_courses_by_date", null)
+            val json = try {
+                if (indexedJson == null) {
+                    val cachedDate = prefs.getString("today_courses_date", "")
+                    if (cachedDate == dateKey) {
+                        prefs.getString("today_courses", "[]") ?: "[]"
+                    } else {
+                        "[]"
+                    }
+                } else {
+                    JSONObject(indexedJson)
+                        .optJSONArray(dateKey)
+                        ?.toString() ?: "[]"
+                }
+            } catch (e: Exception) {
+                Log.w(TAG, "读取按日期课程缓存失败，显示空状态", e)
+                "[]"
+            }
             val courses = mutableListOf<Pair<String, String>>()
             try {
                 val arr = JSONArray(json)

@@ -20,10 +20,10 @@ class SettingsScreen extends StatefulWidget {
 
 class _SettingsScreenState extends State<SettingsScreen> {
   static final _licenseUrl = Uri.parse(
-    'https://github.com/Biapenam/open_schedule/blob/main/LICENSE',
+    'https://github.com/Biapenam/day_schedule/blob/main/LICENSE',
   );
   static final _githubUrl = Uri.parse(
-    'https://github.com/Biapenam/open_schedule',
+    'https://github.com/Biapenam/day_schedule',
   );
 
   final CourseService _service = CourseService();
@@ -192,7 +192,11 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   _ChangelogEntry(
                     version: 'v1.1.5',
                     isLatest: true,
-                    changes: ['将应用更名为 Day Schedule', '添加了开源许可证', '修复了一些已知问题'],
+                    changes: [
+                      '将应用更名为 Day Schedule',
+                      '使用 PolyForm Noncommercial License 1.0.0',
+                      '修复了一些已知问题',
+                    ],
                   ),
                   SizedBox(height: 16),
                   _ChangelogEntry(
@@ -557,7 +561,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                             const Divider(height: 1),
                             _buildInfoTile('开发者', 'Sora'),
                             const Divider(height: 1),
-                            _buildLinkTile(title: '开源许可证', uri: _licenseUrl),
+                            _buildLinkTile(title: '许可证', uri: _licenseUrl),
                             const Divider(height: 1),
                             _buildLinkTile(
                               title: 'GitHub 项目主页',

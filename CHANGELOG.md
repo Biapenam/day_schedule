@@ -3,7 +3,7 @@
 ## v1.1.5
 
 - 将应用更名为 Day Schedule。
-- 添加了开源许可证。
+- 使用 PolyForm Noncommercial License 1.0.0。
 - 修复了一些已知问题。
 
 ## v1.1.4

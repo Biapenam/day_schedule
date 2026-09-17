@@ -1,6 +1,6 @@
 # Day Schedule
 
-[![release](https://img.shields.io/badge/release-v1.1.5-0d8bdc?style=flat-square)](CHANGELOG.md#v115) [![Flutter](https://img.shields.io/badge/Flutter-3.41.9-02569B?logo=flutter&logoColor=white&style=flat-square)](.github/workflows/ci.yml) [![license](https://img.shields.io/badge/license-DSNCL--1.0-f47c20?style=flat-square)](LICENSE) [![Android](https://img.shields.io/badge/Android-supported-3ddc84?logo=android&logoColor=white&style=flat-square)](#)
+[![release](https://img.shields.io/badge/release-v1.1.5-0d8bdc?style=flat-square)](CHANGELOG.md#v115) [![Flutter](https://img.shields.io/badge/Flutter-3.41.9-02569B?logo=flutter&logoColor=white&style=flat-square)](.github/workflows/ci.yml) [![license](https://img.shields.io/badge/license-PolyForm_Noncommercial_1.0.0-f47c20?style=flat-square)](LICENSE) [![Android](https://img.shields.io/badge/Android-supported-3ddc84?logo=android&logoColor=white&style=flat-square)](#)
 
 > 重命名说明：本次重命名同步更新了 Flutter 包名及各平台应用标识。旧版安装包与新版本不会被系统视为同一应用，正式发布前请先安排数据导出或迁移。
 
@@ -90,7 +90,7 @@ android/app/src/main/res/xml/schedule_widget_info.xml
 ## 数据与隐私
 
 - 课程表和应用设置仅保存在设备本地的 `shared_preferences` 中，目前没有账号、云同步、广告或分析服务。
-- 口令导入导出内容包含课程表数据，请仅通过可信渠道传递，不要公开发布含个人信息的口令。
+- 口令导入导出内容包含课程表数据，且仅提供完整性校验，不提供加密或来源认证；请仅通过可信渠道传递。
 - 写入本地数据时会保留最近一次有效 JSON 备份；检测到主数据损坏时，应用会尝试自动恢复并记录本地日志。
 - 卸载应用、清除应用数据或更换设备可能导致本地数据丢失，请在重要变更前导出课表。
 
@@ -115,7 +115,7 @@ android/app/src/main/res/xml/schedule_widget_info.xml
 ### v1.1.5
 
 - 将应用更名为 Day Schedule。
-- 添加了开源许可证。
+- 使用 PolyForm Noncommercial License 1.0.0。
 - 修复了一些已知问题。
 
 ### v1.1.4

@@ -32,53 +32,60 @@ class WidgetService {
       final duration = schedule?.sectionDuration ?? 45;
 
       final now = DateTime.now();
-      final todayWeekday = now.weekday; // 1=周一
+      final today = DateTime(now.year, now.month, now.day);
 
-      // 计算当前周，并判断是否在学期范围内
-      int currentWeek = 1;
-      bool inSemester = true;
-      if (semesterStart != null) {
-        final raw = _courseService.currentWeek(semesterStart);
-        currentWeek = raw;
-        inSemester = raw >= 1 && raw <= totalWeeks;
-      }
+      // 预计算整个学期（未设置学期时预计算未来 14 天），让 Android 原生
+      // 小组件在跨日广播时可以读取下一天，而不是继续显示昨天的缓存。
+      final rangeStart = semesterStart == null
+          ? today
+          : DateTime(
+              semesterStart.year,
+              semesterStart.month,
+              semesterStart.day,
+            );
+      final daysToGenerate = semesterStart == null ? 14 : totalWeeks * 7;
+      final coursesByDate = <String, List<Map<String, String>>>{};
 
-      // 学期未开始或已结束时不显示课程（空列表）
-      List<Course> todayCourses;
-      if (inSemester) {
-        todayCourses = courses
-            .where(
-              (c) =>
-                  c.dayOfWeek == todayWeekday && c.weeks.contains(currentWeek),
-            )
+      List<Map<String, String>> buildCourseList(DateTime date) {
+        final week = semesterStart == null
+            ? 1
+            : _courseService.currentWeek(semesterStart, now: date);
+        final inSemester =
+            semesterStart == null || (week >= 1 && week <= totalWeeks);
+        if (!inSemester) return <Map<String, String>>[];
+
+        final dayCourses =
+            courses
+                .where(
+                  (c) => c.dayOfWeek == date.weekday && c.weeks.contains(week),
+                )
+                .toList()
+              ..sort((a, b) => a.startSection.compareTo(b.startSection));
+        return dayCourses
+            .map((course) => _courseToWidgetMap(course, startTimes, duration))
             .toList();
-        todayCourses.sort((a, b) => a.startSection.compareTo(b.startSection));
-      } else {
-        todayCourses = <Course>[];
       }
 
-      // 构建 JSON
-      final courseList = todayCourses.map((c) {
-        final startTime = Schedule.sectionStartTimeAt(
-          startTimes,
-          c.startSection,
-        );
-        final lastSectionStart = Schedule.sectionStartTimeAt(
-          startTimes,
-          c.endSection,
-        );
-        final endTime = Schedule.calcEndTime(lastSectionStart, duration);
-        return {
-          'name': c.name,
-          'time': '$startTime-$endTime',
-          'location': c.location,
-        };
-      }).toList();
+      for (var offset = 0; offset < daysToGenerate; offset++) {
+        final date = rangeStart.add(Duration(days: offset));
+        coursesByDate[_dateKey(date)] = buildCourseList(date);
+      }
 
-      // 写入数据（home_widget Android 端对应 HomeWidgetPreferences）
+      final courseList =
+          coursesByDate[_dateKey(today)] ?? buildCourseList(today);
+
+      // 写入按日期索引的完整缓存。保留 today_courses 兼容旧版本小组件。
+      await HomeWidget.saveWidgetData<String>(
+        'widget_courses_by_date',
+        jsonEncode(coursesByDate),
+      );
       await HomeWidget.saveWidgetData<String>(
         'today_courses',
         jsonEncode(courseList),
+      );
+      await HomeWidget.saveWidgetData<String>(
+        'today_courses_date',
+        _dateKey(today),
       );
 
       // 通知 Android 刷新桌面组件
@@ -87,6 +94,32 @@ class WidgetService {
       // Widget 更新失败不应影响主应用，但记录日志便于排查
       debugPrint('updateWidget failed: $e');
     }
+  }
+
+  static String _dateKey(DateTime date) =>
+      '${date.year.toString().padLeft(4, '0')}-'
+      '${date.month.toString().padLeft(2, '0')}-'
+      '${date.day.toString().padLeft(2, '0')}';
+
+  static Map<String, String> _courseToWidgetMap(
+    Course course,
+    List<String> startTimes,
+    int duration,
+  ) {
+    final startTime = Schedule.sectionStartTimeAt(
+      startTimes,
+      course.startSection,
+    );
+    final lastSectionStart = Schedule.sectionStartTimeAt(
+      startTimes,
+      course.endSection,
+    );
+    final endTime = Schedule.calcEndTime(lastSectionStart, duration);
+    return {
+      'name': course.name,
+      'time': '$startTime-$endTime',
+      'location': course.location,
+    };
   }
 
   Future<String> requestPinWidget() async {

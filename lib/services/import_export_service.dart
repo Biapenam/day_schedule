@@ -93,12 +93,6 @@ class ImportExportService {
       throw FormatException('口令版本过新（v$version），请升级应用后再导入');
     }
 
-    final courses = ((map['courses'] as List?) ?? const [])
-        .whereType<Map<String, dynamic>>()
-        .map(_courseFromMap)
-        .where((c) => c.name.isNotEmpty)
-        .toList();
-
     final rawStart = map['semesterStart']?.toString() ?? '';
     final schedule = Schedule(
       id: const Uuid().v4(),
@@ -111,6 +105,27 @@ class ImportExportService {
           .toList(),
       sectionDuration: _readInt(map, 'sectionDuration', 45),
     );
+
+    final rawCourses = ((map['courses'] as List?) ?? const [])
+        .whereType<Map<String, dynamic>>()
+        .toList();
+    final hasInvalidCourse = rawCourses.any((course) {
+      final weeks = _readWeeks(course['weeks']);
+      final startSection = _readInt(course, 'startSection', 1);
+      final endSection = _readInt(course, 'endSection', startSection);
+      return weeks.any((week) => week < 1 || week > schedule.totalWeeks) ||
+          startSection < 1 ||
+          endSection < startSection ||
+          endSection > schedule.dailySections;
+    });
+    if (hasInvalidCourse) {
+      throw const FormatException('口令中的课程超出课表周次或节次范围');
+    }
+
+    final courses = rawCourses
+        .map(_courseFromMap)
+        .where((c) => c.name.isNotEmpty)
+        .toList();
 
     return ExportData(schedule: schedule, courses: courses);
   }
@@ -151,6 +166,17 @@ class ImportExportService {
     if (v is num) return v.toInt();
     if (v is String) return int.tryParse(v) ?? fallback;
     return fallback;
+  }
+
+  static List<int> _readWeeks(Object? raw) {
+    if (raw is! List) return const [];
+    return raw
+        .map((value) {
+          if (value is num) return value.toInt();
+          return int.tryParse(value.toString());
+        })
+        .whereType<int>()
+        .toList();
   }
 
   /// 计算 payload 的 4 位校验字符（FNV-1a 32 位）

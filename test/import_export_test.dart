@@ -103,6 +103,56 @@ void main() {
     expect(data.courses.length, 2);
   });
 
+  test('导入时拒绝超出课表周次范围的课程', () {
+    final schedule = Schedule(
+      id: 's-invalid-week',
+      name: '一周课表',
+      totalWeeks: 1,
+    );
+    final course = Course(
+      id: 'c-invalid-week',
+      name: '超范围课程',
+      teacher: '',
+      location: '',
+      colorValue: courseColors[0],
+      weeks: const [2],
+      dayOfWeek: 1,
+      startSection: 1,
+      endSection: 1,
+    );
+    final code = ImportExportService.encode(schedule, [course]);
+
+    expect(
+      () => ImportExportService.decode(code),
+      throwsA(isA<FormatException>()),
+    );
+  });
+
+  test('导入时拒绝超出每天节数范围的课程', () {
+    final schedule = Schedule(
+      id: 's-invalid-section',
+      name: '四节课表',
+      dailySections: 4,
+    );
+    final course = Course(
+      id: 'c-invalid-section',
+      name: '超范围课程',
+      teacher: '',
+      location: '',
+      colorValue: courseColors[0],
+      weeks: const [1],
+      dayOfWeek: 1,
+      startSection: 5,
+      endSection: 5,
+    );
+    final code = ImportExportService.encode(schedule, [course]);
+
+    expect(
+      () => ImportExportService.decode(code),
+      throwsA(isA<FormatException>()),
+    );
+  });
+
   // ── 导入流程集成测试 ─────────────────────────────────────
 
   Future<void> openImportSheet(

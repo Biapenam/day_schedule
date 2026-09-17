@@ -31,11 +31,14 @@ jobs:
       - name: Check Dart formatting
         run: dart format --output=none --set-exit-if-changed lib test
 
+      - name: Check Git diff
+        run: git diff --check
+
       - name: Analyze Dart code
         run: flutter analyze
 
       - name: Run tests
-        run: flutter test
+        run: flutter test --coverage
 
       - name: Build Android debug APK
         run: flutter build apk --debug
