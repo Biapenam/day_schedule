@@ -23,7 +23,7 @@ void main() async {
       statusBarIconBrightness: Brightness.dark,
     ),
   );
-  runApp(const ScheduleApp());
+  runApp(const DayScheduleApp());
 }
 
 /// 设置屏幕方向：
@@ -33,7 +33,8 @@ Future<void> _setPreferredOrientations() async {
   final view = WidgetsBinding.instance.platformDispatcher.views.first;
   final logicalSize = view.physicalSize / view.devicePixelRatio;
   final isTablet =
-      math.max(logicalSize.width, logicalSize.height) >= Responsive.tabletBreakpoint;
+      math.max(logicalSize.width, logicalSize.height) >=
+      Responsive.tabletBreakpoint;
   if (isTablet) {
     await SystemChrome.setPreferredOrientations([
       DeviceOrientation.portraitUp,
@@ -41,8 +42,6 @@ Future<void> _setPreferredOrientations() async {
       DeviceOrientation.landscapeRight,
     ]);
   } else {
-    await SystemChrome.setPreferredOrientations([
-      DeviceOrientation.portraitUp,
-    ]);
+    await SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
   }
 }

@@ -1,0 +1,5 @@
+blank_issues_enabled: false
+contact_links:
+  - name: 安全问题报告
+    url: mailto:WLGking220219@outlook.com
+    about: 请不要在公开 Issue 中披露安全漏洞，请通过邮件私下报告。

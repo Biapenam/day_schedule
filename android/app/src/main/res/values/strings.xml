@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_name">Open Schedule</string>
+    <string name="app_name">Day Schedule</string>
 
     <!-- 桌面小组件 -->
     <string name="widget_today_courses">今日课程</string>
@@ -11,7 +11,7 @@
     <!-- 添加小卡片提示 -->
     <string name="widget_pin_requested">已请求添加小卡片；如桌面未弹出确认，请手动添加</string>
     <string name="widget_pin_added">桌面小卡片已添加</string>
-    <string name="widget_pin_fallback">请在桌面小组件列表中添加 Open Schedule</string>
+    <string name="widget_pin_fallback">请在桌面小组件列表中添加 Day Schedule</string>
     <string name="widget_pin_unsupported">当前桌面不支持快捷添加小卡片</string>
     <string name="widget_pin_failed">当前桌面无法快捷添加小卡片</string>
 </resources>

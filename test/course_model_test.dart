@@ -1,5 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:open_schedule/models/course.dart';
+import 'package:day_schedule/models/course.dart';
 
 void main() {
   Course buildCourse({
@@ -55,8 +55,16 @@ void main() {
 
   group('overlaps 冲突检测', () {
     test('同一天、周次有交集、节次重叠 → 冲突', () {
-      final a = buildCourse(weeks: const [1, 3], startSection: 1, endSection: 3);
-      final b = buildCourse(weeks: const [2, 3], startSection: 3, endSection: 4);
+      final a = buildCourse(
+        weeks: const [1, 3],
+        startSection: 1,
+        endSection: 3,
+      );
+      final b = buildCourse(
+        weeks: const [2, 3],
+        startSection: 3,
+        endSection: 4,
+      );
       expect(Course.overlaps(a, b), isTrue);
     });
 

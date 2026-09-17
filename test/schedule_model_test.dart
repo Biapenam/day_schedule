@@ -1,5 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:open_schedule/models/schedule.dart';
+import 'package:day_schedule/models/schedule.dart';
 
 void main() {
   Schedule buildSchedule({
@@ -30,20 +30,24 @@ void main() {
 
     test('dailySections 限制在 4-16', () {
       expect(
-          buildSchedule(dailySections: 2).dailySections,
-          Schedule.minDailySections);
+        buildSchedule(dailySections: 2).dailySections,
+        Schedule.minDailySections,
+      );
       expect(
-          buildSchedule(dailySections: 30).dailySections,
-          Schedule.maxDailySections);
+        buildSchedule(dailySections: 30).dailySections,
+        Schedule.maxDailySections,
+      );
     });
 
     test('sectionDuration 限制在 20-120', () {
       expect(
-          buildSchedule(sectionDuration: 10).sectionDuration,
-          Schedule.minSectionDuration);
+        buildSchedule(sectionDuration: 10).sectionDuration,
+        Schedule.minSectionDuration,
+      );
       expect(
-          buildSchedule(sectionDuration: 300).sectionDuration,
-          Schedule.maxSectionDuration);
+        buildSchedule(sectionDuration: 300).sectionDuration,
+        Schedule.maxSectionDuration,
+      );
     });
   });
 

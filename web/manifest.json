@@ -1,11 +1,11 @@
 {
-    "name": "schedule_app",
-    "short_name": "schedule_app",
+    "name": "Day Schedule",
+    "short_name": "Day Schedule",
     "start_url": ".",
     "display": "standalone",
     "background_color": "#0175C2",
     "theme_color": "#0175C2",
-    "description": "A new Flutter project.",
+    "description": "Day Schedule - 大学课程表应用",
     "orientation": "portrait-primary",
     "prefer_related_applications": false,
     "icons": [

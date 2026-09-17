@@ -1,4 +1,4 @@
-package com.biapenam.open_schedule
+package com.biapenam.day_schedule
 
 import android.app.PendingIntent
 import android.appwidget.AppWidgetManager
@@ -38,7 +38,7 @@ class ScheduleWidgetProvider : AppWidgetProvider() {
     }
 
     companion object {
-        private const val TAG = "OpenScheduleWidget"
+        private const val TAG = "DayScheduleWidget"
 
         fun updateAppWidget(
             context: Context,

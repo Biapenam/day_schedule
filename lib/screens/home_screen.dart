@@ -69,7 +69,8 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
     final totalWeeks = schedule?.totalWeeks ?? 20;
     final dailySections = schedule?.dailySections ?? 12;
     final sectionStartTimes =
-        schedule?.sectionStartTimes ?? List<String>.from(defaultSectionStartTimes);
+        schedule?.sectionStartTimes ??
+        List<String>.from(defaultSectionStartTimes);
     final sectionDuration = schedule?.sectionDuration ?? 45;
 
     int rawWeek = 1;
@@ -95,8 +96,8 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
     final initialPage = ended
         ? totalWeeks - 1
         : (notStarted || notSet)
-            ? 0
-            : displayCurrentWeek - 1;
+        ? 0
+        : displayCurrentWeek - 1;
 
     if (!mounted) return;
     _pageController?.dispose();
@@ -136,7 +137,9 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
   }
 
   Map<int, List<Course>> _groupCoursesByWeek(
-      List<Course> courses, int totalWeeks) {
+    List<Course> courses,
+    int totalWeeks,
+  ) {
     final grouped = <int, List<Course>>{
       for (var week = 1; week <= totalWeeks; week++) week: <Course>[],
     };
@@ -150,21 +153,23 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
 
   void _goToWeek(int week) {
     final target = week.clamp(1, _totalWeeks);
-    _pageController?.animateToPage(target - 1,
-        duration: 350.ms, curve: Curves.easeInOutCubic);
+    _pageController?.animateToPage(
+      target - 1,
+      duration: 350.ms,
+      curve: Curves.easeInOutCubic,
+    );
   }
 
   void _openAddCourse() async {
     final result = await Navigator.push<bool>(
       context,
       PageRouteBuilder(
-        pageBuilder: (_, anim, _) => AddCourseScreen(
-          totalWeeks: _totalWeeks,
-        ),
+        pageBuilder: (_, anim, _) => AddCourseScreen(totalWeeks: _totalWeeks),
         transitionsBuilder: (_, anim, _, child) => SlideTransition(
-          position: Tween<Offset>(begin: const Offset(0, 1), end: Offset.zero)
-              .animate(
-                  CurvedAnimation(parent: anim, curve: Curves.easeOutCubic)),
+          position: Tween<Offset>(
+            begin: const Offset(0, 1),
+            end: Offset.zero,
+          ).animate(CurvedAnimation(parent: anim, curve: Curves.easeOutCubic)),
           child: child,
         ),
         transitionDuration: 400.ms,
@@ -208,8 +213,8 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
           builder: (context, constraints) {
             final contentMaxWidth =
                 constraints.maxWidth >= Responsive.tabletBreakpoint
-                    ? math.min(constraints.maxWidth, Responsive.contentMaxWidth)
-                    : constraints.maxWidth;
+                ? math.min(constraints.maxWidth, Responsive.contentMaxWidth)
+                : constraints.maxWidth;
             return Center(
               child: ConstrainedBox(
                 constraints: BoxConstraints(maxWidth: contentMaxWidth),
@@ -269,8 +274,10 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
         ),
       ),
       floatingActionButton: ScaleTransition(
-        scale:
-            CurvedAnimation(parent: _fabController, curve: Curves.elasticOut),
+        scale: CurvedAnimation(
+          parent: _fabController,
+          curve: Curves.elasticOut,
+        ),
         child: FloatingActionButton(
           onPressed: _openAddCourse,
           tooltip: '添加课程',
@@ -297,20 +304,27 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                 Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    Text(_scheduleName,
-                        style: Theme.of(context).textTheme.displayLarge),
+                    Text(
+                      _scheduleName,
+                      style: Theme.of(context).textTheme.displayLarge,
+                    ),
                     const SizedBox(width: 6),
-                    const Icon(Icons.keyboard_arrow_down_rounded,
-                        color: AppColors.primary, size: 28),
+                    const Icon(
+                      Icons.keyboard_arrow_down_rounded,
+                      color: AppColors.primary,
+                      size: 28,
+                    ),
                   ],
                 ),
                 const SizedBox(height: 2),
-                Text(todayStr,
-                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                            color: Theme.of(context)
-                                .colorScheme
-                                .primary
-                                .withValues(alpha: 0.7))),
+                Text(
+                  todayStr,
+                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                    color: Theme.of(
+                      context,
+                    ).colorScheme.primary.withValues(alpha: 0.7),
+                  ),
+                ),
               ],
             ),
           ),
@@ -322,7 +336,8 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
               backgroundColor: Colors.white,
               foregroundColor: AppColors.primary,
               shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12)),
+                borderRadius: BorderRadius.circular(12),
+              ),
             ),
           ),
         ],
@@ -371,11 +386,14 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
               Icon(icon, color: color, size: 18),
               const SizedBox(width: 8),
               Expanded(
-                child: Text(message,
-                    style: TextStyle(
-                        fontSize: 12,
-                        fontWeight: FontWeight.w600,
-                        color: color)),
+                child: Text(
+                  message,
+                  style: TextStyle(
+                    fontSize: 12,
+                    fontWeight: FontWeight.w600,
+                    color: color,
+                  ),
+                ),
               ),
               Icon(Icons.chevron_right_rounded, color: color, size: 18),
             ],

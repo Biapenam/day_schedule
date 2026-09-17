@@ -9,10 +9,7 @@ class ExportData {
   final Schedule schedule; // id 已重新生成
   final List<Course> courses; // id 已重新生成
 
-  const ExportData({
-    required this.schedule,
-    required this.courses,
-  });
+  const ExportData({required this.schedule, required this.courses});
 }
 
 /// 课表「口令」导入导出服务。
@@ -47,16 +44,18 @@ class ImportExportService {
       'sectionDuration': schedule.sectionDuration,
       'sectionStartTimes': schedule.sectionStartTimes,
       'courses': courses
-          .map((c) => {
-                'name': c.name,
-                'teacher': c.teacher,
-                'location': c.location,
-                'colorValue': c.colorValue,
-                'weeks': c.weeks,
-                'dayOfWeek': c.dayOfWeek,
-                'startSection': c.startSection,
-                'endSection': c.endSection,
-              })
+          .map(
+            (c) => {
+              'name': c.name,
+              'teacher': c.teacher,
+              'location': c.location,
+              'colorValue': c.colorValue,
+              'weeks': c.weeks,
+              'dayOfWeek': c.dayOfWeek,
+              'startSection': c.startSection,
+              'endSection': c.endSection,
+            },
+          )
           .toList(),
     };
     final jsonStr = jsonEncode(map);
@@ -119,11 +118,16 @@ class ImportExportService {
   // ── 内部工具 ─────────────────────────────────────────────
 
   static Course _courseFromMap(Map<String, dynamic> c) {
-    final startSection =
-        _readInt(c, 'startSection', 1).clamp(1, Course.maxSection).toInt();
-    final endSection = _readInt(c, 'endSection', startSection)
-        .clamp(startSection, Course.maxSection)
-        .toInt();
+    final startSection = _readInt(
+      c,
+      'startSection',
+      1,
+    ).clamp(1, Course.maxSection).toInt();
+    final endSection = _readInt(
+      c,
+      'endSection',
+      startSection,
+    ).clamp(startSection, Course.maxSection).toInt();
     return Course(
       id: const Uuid().v4(),
       name: (c['name'] ?? '').toString(),

@@ -9,14 +9,14 @@ import '../services/course_service.dart';
 class WidgetService {
   // 必须和 AndroidManifest 中 receiver 的包名一致
   static const _widgetName = 'ScheduleWidgetProvider';
-  static const _platform = MethodChannel('open_schedule/widget');
+  static const _platform = MethodChannel('day_schedule/widget');
 
   final CourseService _courseService = CourseService();
 
   /// 初始化：设置 App Group ID（Android 上等同于包名）
   static Future<void> init() async {
     // Android 不需要 AppGroupId，仅 iOS 需要；这里保留调用以兼容
-    await HomeWidget.setAppGroupId('com.biapenam.open_schedule');
+    await HomeWidget.setAppGroupId('com.biapenam.day_schedule');
   }
 
   /// 推送今日课程数据到桌面小组件
@@ -47,8 +47,10 @@ class WidgetService {
       List<Course> todayCourses;
       if (inSemester) {
         todayCourses = courses
-            .where((c) =>
-                c.dayOfWeek == todayWeekday && c.weeks.contains(currentWeek))
+            .where(
+              (c) =>
+                  c.dayOfWeek == todayWeekday && c.weeks.contains(currentWeek),
+            )
             .toList();
         todayCourses.sort((a, b) => a.startSection.compareTo(b.startSection));
       } else {
@@ -57,10 +59,14 @@ class WidgetService {
 
       // 构建 JSON
       final courseList = todayCourses.map((c) {
-        final startTime =
-            Schedule.sectionStartTimeAt(startTimes, c.startSection);
-        final lastSectionStart =
-            Schedule.sectionStartTimeAt(startTimes, c.endSection);
+        final startTime = Schedule.sectionStartTimeAt(
+          startTimes,
+          c.startSection,
+        );
+        final lastSectionStart = Schedule.sectionStartTimeAt(
+          startTimes,
+          c.endSection,
+        );
         final endTime = Schedule.calcEndTime(lastSectionStart, duration);
         return {
           'name': c.name,
@@ -76,9 +82,7 @@ class WidgetService {
       );
 
       // 通知 Android 刷新桌面组件
-      await HomeWidget.updateWidget(
-        androidName: _widgetName,
-      );
+      await HomeWidget.updateWidget(androidName: _widgetName);
     } catch (e) {
       // Widget 更新失败不应影响主应用，但记录日志便于排查
       debugPrint('updateWidget failed: $e');

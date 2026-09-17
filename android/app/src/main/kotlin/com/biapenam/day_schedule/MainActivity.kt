@@ -1,4 +1,4 @@
-package com.biapenam.open_schedule
+package com.biapenam.day_schedule
 
 import android.app.PendingIntent
 import android.appwidget.AppWidgetManager
@@ -75,8 +75,8 @@ class MainActivity : FlutterActivity() {
     }
 
     companion object {
-        private const val CHANNEL = "open_schedule/widget"
-        private const val TAG = "OpenScheduleWidget"
+        private const val CHANNEL = "day_schedule/widget"
+        private const val TAG = "DayScheduleWidget"
         private const val REQUEST_PIN_WIDGET_CODE = 1001
     }
 }

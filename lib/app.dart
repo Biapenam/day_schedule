@@ -1,14 +1,14 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import 'screens/home_screen.dart';
 import 'utils/app_colors.dart';
 
-class ScheduleApp extends StatelessWidget {
-  const ScheduleApp({super.key});
+class DayScheduleApp extends StatelessWidget {
+  const DayScheduleApp({super.key});
 
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: '课程表',
+      title: 'Day Schedule',
       debugShowCheckedModeBanner: false,
       theme: _buildTheme(),
       home: const HomeScreen(),
@@ -42,10 +42,7 @@ class ScheduleApp extends StatelessWidget {
           fontWeight: FontWeight.w600,
           color: AppColors.textPrimary,
         ),
-        bodyMedium: TextStyle(
-          fontSize: 13,
-          color: AppColors.textBody,
-        ),
+        bodyMedium: TextStyle(fontSize: 13, color: AppColors.textBody),
       ),
       appBarTheme: const AppBarTheme(
         backgroundColor: Colors.transparent,
@@ -67,10 +64,7 @@ class ScheduleApp extends StatelessWidget {
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(12),
           ),
-          textStyle: const TextStyle(
-            fontSize: 16,
-            fontWeight: FontWeight.w700,
-          ),
+          textStyle: const TextStyle(fontSize: 16, fontWeight: FontWeight.w700),
         ),
       ),
       floatingActionButtonTheme: const FloatingActionButtonThemeData(
@@ -90,8 +84,10 @@ class ScheduleApp extends StatelessWidget {
           borderRadius: BorderRadius.circular(14),
           borderSide: const BorderSide(color: primaryColor, width: 2),
         ),
-        contentPadding:
-            const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+        contentPadding: const EdgeInsets.symmetric(
+          horizontal: 16,
+          vertical: 14,
+        ),
         labelStyle: const TextStyle(color: AppColors.textSecondary),
         hintStyle: const TextStyle(color: Color(0xFFAAAAAA)),
       ),

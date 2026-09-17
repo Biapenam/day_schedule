@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:developer' as developer;
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:uuid/uuid.dart';
 import '../models/course.dart';
@@ -6,6 +7,7 @@ import '../models/schedule.dart';
 
 class CourseService {
   static const _schedulesKey = 'schedules';
+  static const _schedulesBackupKey = 'schedules_backup';
   static const _activeScheduleIdKey = 'active_schedule_id';
 
   // 旧的全局 key（用于一次性迁移）
@@ -31,6 +33,25 @@ class CourseService {
   }
 
   String _coursesKey(String scheduleId) => 'courses_$scheduleId';
+
+  String _coursesBackupKey(String scheduleId) => 'courses_${scheduleId}_backup';
+
+  Future<void> _setStringWithBackup(
+    SharedPreferences prefs,
+    String key,
+    String value, {
+    required String backupKey,
+  }) async {
+    final previous = prefs.getString(key);
+    if (previous != null && previous.isNotEmpty) {
+      await prefs.setString(backupKey, previous);
+    }
+    await prefs.setString(key, value);
+  }
+
+  void _logStorageWarning(String message) {
+    developer.log(message, name: 'day_schedule.storage');
+  }
 
   // ─── 迁移与初始化 ──────────────────────────────────────────
 
@@ -92,8 +113,10 @@ class CourseService {
               .map(Course.fromJson)
               .where((c) => c.id.isNotEmpty && c.name.isNotEmpty)
               .toList();
-          await prefs.setString(_coursesKey(id),
-              jsonEncode(courses.map((c) => c.toJson()).toList()));
+          await prefs.setString(
+            _coursesKey(id),
+            jsonEncode(courses.map((c) => c.toJson()).toList()),
+          );
         }
       } catch (_) {}
     }
@@ -114,22 +137,48 @@ class CourseService {
     final prefs = await SharedPreferences.getInstance();
     final raw = prefs.getString(_schedulesKey);
     if (raw == null) return [];
+
+    final schedules = _decodeSchedules(raw);
+    if (schedules != null) return schedules;
+
+    final backupRaw = prefs.getString(_schedulesBackupKey);
+    final backupSchedules = _decodeSchedules(backupRaw);
+    if (backupSchedules != null) {
+      _logStorageWarning(
+        'Primary schedule data was invalid; restored the last valid backup.',
+      );
+      await prefs.setString(_schedulesKey, backupRaw!);
+      return backupSchedules;
+    }
+
+    _logStorageWarning(
+      'Primary and backup schedule data were invalid; returning an empty list.',
+    );
+    return [];
+  }
+
+  Future<void> _saveSchedules(List<Schedule> schedules) async {
+    final prefs = await SharedPreferences.getInstance();
+    await _setStringWithBackup(
+      prefs,
+      _schedulesKey,
+      jsonEncode(schedules.map((s) => s.toJson()).toList()),
+      backupKey: _schedulesBackupKey,
+    );
+  }
+
+  List<Schedule>? _decodeSchedules(String? raw) {
+    if (raw == null) return null;
     try {
       final decoded = jsonDecode(raw);
-      if (decoded is! List) return [];
+      if (decoded is! List) return null;
       return decoded
           .whereType<Map<String, dynamic>>()
           .map(Schedule.fromJson)
           .toList();
     } catch (_) {
-      return [];
+      return null;
     }
-  }
-
-  Future<void> _saveSchedules(List<Schedule> schedules) async {
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.setString(
-        _schedulesKey, jsonEncode(schedules.map((s) => s.toJson()).toList()));
   }
 
   Future<String?> getActiveScheduleId() async {
@@ -144,8 +193,10 @@ class CourseService {
     if (schedules.isEmpty) return null;
     final id = await getActiveScheduleId();
     if (id == null) return schedules.first;
-    return schedules.firstWhere((s) => s.id == id,
-        orElse: () => schedules.first);
+    return schedules.firstWhere(
+      (s) => s.id == id,
+      orElse: () => schedules.first,
+    );
   }
 
   /// 切换当前激活课表
@@ -187,6 +238,7 @@ class CourseService {
       await _saveSchedules(remaining);
       final prefs = await SharedPreferences.getInstance();
       await prefs.remove(_coursesKey(id));
+      await prefs.remove(_coursesBackupKey(id));
       final activeId = await getActiveScheduleId();
       if (activeId == id) await setActiveSchedule(remaining.first.id);
     });
@@ -216,18 +268,43 @@ class CourseService {
 
   Future<List<Course>> loadCoursesFor(String scheduleId) async {
     final prefs = await SharedPreferences.getInstance();
-    final raw = prefs.getString(_coursesKey(scheduleId));
+    final key = _coursesKey(scheduleId);
+    final raw = prefs.getString(key);
     if (raw == null) return [];
+
+    final courses = _decodeCourses(raw);
+    if (courses != null) return courses;
+
+    final backupRaw = prefs.getString(_coursesBackupKey(scheduleId));
+    final backupCourses = _decodeCourses(backupRaw);
+    if (backupCourses != null) {
+      _logStorageWarning(
+        'Primary course data was invalid; restored the last valid backup for '
+        'schedule $scheduleId.',
+      );
+      await prefs.setString(key, backupRaw!);
+      return backupCourses;
+    }
+
+    _logStorageWarning(
+      'Primary and backup course data were invalid for schedule $scheduleId; '
+      'returning an empty list.',
+    );
+    return [];
+  }
+
+  List<Course>? _decodeCourses(String? raw) {
+    if (raw == null) return null;
     try {
       final decoded = jsonDecode(raw);
-      if (decoded is! List) return [];
+      if (decoded is! List) return null;
       return decoded
           .whereType<Map<String, dynamic>>()
           .map(Course.fromJson)
           .where((course) => course.id.isNotEmpty && course.name.isNotEmpty)
           .toList();
     } catch (_) {
-      return [];
+      return null;
     }
   }
 
@@ -236,7 +313,12 @@ class CourseService {
     await _serializeWrite(() async {
       final prefs = await SharedPreferences.getInstance();
       final raw = jsonEncode(courses.map((c) => c.toJson()).toList());
-      await prefs.setString(_coursesKey(scheduleId), raw);
+      await _setStringWithBackup(
+        prefs,
+        _coursesKey(scheduleId),
+        raw,
+        backupKey: _coursesBackupKey(scheduleId),
+      );
     });
   }
 
@@ -247,8 +329,12 @@ class CourseService {
       if (id == null) return;
       courses.add(course);
       final prefs = await SharedPreferences.getInstance();
-      await prefs.setString(
-          _coursesKey(id), jsonEncode(courses.map((c) => c.toJson()).toList()));
+      await _setStringWithBackup(
+        prefs,
+        _coursesKey(id),
+        jsonEncode(courses.map((c) => c.toJson()).toList()),
+        backupKey: _coursesBackupKey(id),
+      );
     });
   }
 
@@ -260,8 +346,12 @@ class CourseService {
       final idx = courses.indexWhere((c) => c.id == updated.id);
       if (idx != -1) courses[idx] = updated;
       final prefs = await SharedPreferences.getInstance();
-      await prefs.setString(
-          _coursesKey(id), jsonEncode(courses.map((c) => c.toJson()).toList()));
+      await _setStringWithBackup(
+        prefs,
+        _coursesKey(id),
+        jsonEncode(courses.map((c) => c.toJson()).toList()),
+        backupKey: _coursesBackupKey(id),
+      );
     });
   }
 
@@ -272,8 +362,12 @@ class CourseService {
       if (activeId == null) return;
       courses.removeWhere((c) => c.id == id);
       final prefs = await SharedPreferences.getInstance();
-      await prefs.setString(_coursesKey(activeId),
-          jsonEncode(courses.map((c) => c.toJson()).toList()));
+      await _setStringWithBackup(
+        prefs,
+        _coursesKey(activeId),
+        jsonEncode(courses.map((c) => c.toJson()).toList()),
+        backupKey: _coursesBackupKey(activeId),
+      );
     });
   }
 
@@ -348,9 +442,9 @@ class CourseService {
   /// 计算当前周（真实值，不 clamp）。
   /// 返回值可能 < 1（学期未开始）或 > totalWeeks（学期已结束），
   /// 调用方需自行判断是否在学期范围内。
-  int currentWeek(DateTime semesterStart) {
-    final now = DateTime.now();
-    final diff = now.difference(semesterStart).inDays;
+  int currentWeek(DateTime semesterStart, {DateTime? now}) {
+    final currentTime = now ?? DateTime.now();
+    final diff = currentTime.difference(semesterStart).inDays;
     if (diff < 0) return (diff ~/ 7) - 1;
     return (diff ~/ 7) + 1;
   }

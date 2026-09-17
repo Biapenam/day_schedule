@@ -54,8 +54,9 @@ class _AddCourseScreenState extends State<AddCourseScreen> {
     _selectedColor = c?.colorValue ?? courseColors[0];
     _selectedWeeks = c != null ? Set<int>.from(c.weeks) : {};
     if (_selectedWeeks.isEmpty) {
-      _selectedWeeks =
-          Set<int>.from(List.generate(widget.totalWeeks, (i) => i + 1));
+      _selectedWeeks = Set<int>.from(
+        List.generate(widget.totalWeeks, (i) => i + 1),
+      );
     }
     _loadSettings();
   }
@@ -91,9 +92,9 @@ class _AddCourseScreenState extends State<AddCourseScreen> {
   Future<void> _save() async {
     if (!_formKey.currentState!.validate()) return;
     if (_selectedWeeks.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('请至少选择一个上课周次')),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('请至少选择一个上课周次')));
       return;
     }
     final conflicts = await _findConflicts();
@@ -126,9 +127,9 @@ class _AddCourseScreenState extends State<AddCourseScreen> {
     } catch (e) {
       debugPrint('save course failed: $e');
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('保存课程失败，请重试')),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('保存课程失败，请重试')));
     } finally {
       if (mounted) setState(() => _saving = false);
     }
@@ -196,19 +197,29 @@ class _AddCourseScreenState extends State<AddCourseScreen> {
               onPressed: _saving ? null : _save,
               style: FilledButton.styleFrom(
                 shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12)),
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 20,
+                  vertical: 10,
+                ),
               ),
               child: _saving
                   ? const SizedBox(
                       width: 16,
                       height: 16,
                       child: CircularProgressIndicator(
-                          strokeWidth: 2, color: Colors.white))
-                  : const Text('保存',
-                      style:
-                          TextStyle(fontWeight: FontWeight.w700, fontSize: 14)),
+                        strokeWidth: 2,
+                        color: Colors.white,
+                      ),
+                    )
+                  : const Text(
+                      '保存',
+                      style: TextStyle(
+                        fontWeight: FontWeight.w700,
+                        fontSize: 14,
+                      ),
+                    ),
             ),
           ),
         ],
@@ -224,8 +235,8 @@ class _AddCourseScreenState extends State<AddCourseScreen> {
             // 周次格子在双栏下按栏宽动态决定列数
             final weekColumns = twoColumn
                 ? (((constraints.maxWidth - padding * 2 - 20) / 2 / 72)
-                    .floor()
-                    .clamp(4, 8))
+                      .floor()
+                      .clamp(4, 8))
                 : 5;
             return ListView(
               padding: EdgeInsets.all(padding),
@@ -278,8 +289,12 @@ class _AddCourseScreenState extends State<AddCourseScreen> {
   Widget _sectionBasicInfo() {
     return _IntroGate(
       child: _buildSection('基本信息', [
-        _buildTextField(_nameCtrl, '课程名称 *', Icons.book_rounded,
-            validator: (v) => (v == null || v.trim().isEmpty) ? '请输入课程名称' : null),
+        _buildTextField(
+          _nameCtrl,
+          '课程名称 *',
+          Icons.book_rounded,
+          validator: (v) => (v == null || v.trim().isEmpty) ? '请输入课程名称' : null,
+        ),
         const SizedBox(height: 12),
         _buildTextField(_teacherCtrl, '任课教师（可选）', Icons.person_rounded),
         const SizedBox(height: 12),
@@ -311,9 +326,7 @@ class _AddCourseScreenState extends State<AddCourseScreen> {
   Widget _sectionColor() {
     return _IntroGate(
       delay: 300.ms,
-      child: _buildSection('课程颜色', [
-        _buildColorPicker(),
-      ]),
+      child: _buildSection('课程颜色', [_buildColorPicker()]),
     );
   }
 
@@ -334,11 +347,14 @@ class _AddCourseScreenState extends State<AddCourseScreen> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(title,
-              style: const TextStyle(
-                  fontSize: 13,
-                  fontWeight: FontWeight.w700,
-                  color: AppColors.primary)),
+          Text(
+            title,
+            style: const TextStyle(
+              fontSize: 13,
+              fontWeight: FontWeight.w700,
+              color: AppColors.primary,
+            ),
+          ),
           const SizedBox(height: 12),
           ...children,
         ],
@@ -347,8 +363,11 @@ class _AddCourseScreenState extends State<AddCourseScreen> {
   }
 
   Widget _buildTextField(
-      TextEditingController ctrl, String label, IconData icon,
-      {String? Function(String?)? validator}) {
+    TextEditingController ctrl,
+    String label,
+    IconData icon, {
+    String? Function(String?)? validator,
+  }) {
     return TextFormField(
       controller: ctrl,
       validator: validator,
@@ -364,11 +383,14 @@ class _AddCourseScreenState extends State<AddCourseScreen> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text('星期',
-            style: TextStyle(
-                fontSize: 12,
-                color: Color(0xFFAAAAAA),
-                fontWeight: FontWeight.w500)),
+        const Text(
+          '星期',
+          style: TextStyle(
+            fontSize: 12,
+            color: Color(0xFFAAAAAA),
+            fontWeight: FontWeight.w500,
+          ),
+        ),
         const SizedBox(height: 8),
         Row(
           children: [
@@ -382,24 +404,25 @@ class _AddCourseScreenState extends State<AddCourseScreen> {
                     height: 38,
                     decoration: BoxDecoration(
                       color: _dayOfWeek == d
-                          ? (d >= 6
-                              ? AppColors.secondary
-                              : AppColors.primary)
+                          ? (d >= 6 ? AppColors.secondary : AppColors.primary)
                           : (d >= 6
-                              ? const Color(0xFFFFF0F3)
-                              : AppColors.inputFill),
+                                ? const Color(0xFFFFF0F3)
+                                : AppColors.inputFill),
                       borderRadius: BorderRadius.circular(10),
                     ),
                     child: Center(
-                      child: Text(days[d],
-                          style: TextStyle(
-                              fontSize: 13,
-                              fontWeight: FontWeight.w600,
-                              color: _dayOfWeek == d
-                                  ? Colors.white
-                                  : (d >= 6
-                                      ? AppColors.secondary
-                                      : AppColors.textBody))),
+                      child: Text(
+                        days[d],
+                        style: TextStyle(
+                          fontSize: 13,
+                          fontWeight: FontWeight.w600,
+                          color: _dayOfWeek == d
+                              ? Colors.white
+                              : (d >= 6
+                                    ? AppColors.secondary
+                                    : AppColors.textBody),
+                        ),
+                      ),
                     ),
                   ),
                 ),
@@ -414,11 +437,14 @@ class _AddCourseScreenState extends State<AddCourseScreen> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text('节次',
-            style: TextStyle(
-                fontSize: 12,
-                color: Color(0xFFAAAAAA),
-                fontWeight: FontWeight.w500)),
+        const Text(
+          '节次',
+          style: TextStyle(
+            fontSize: 12,
+            color: Color(0xFFAAAAAA),
+            fontWeight: FontWeight.w500,
+          ),
+        ),
         const SizedBox(height: 8),
         Row(
           children: [
@@ -437,8 +463,10 @@ class _AddCourseScreenState extends State<AddCourseScreen> {
             ),
             const Padding(
               padding: EdgeInsets.symmetric(horizontal: 8),
-              child: Text('—',
-                  style: TextStyle(color: Color(0xFFAAAAAA), fontSize: 18)),
+              child: Text(
+                '—',
+                style: TextStyle(color: Color(0xFFAAAAAA), fontSize: 18),
+              ),
             ),
             Expanded(
               child: _SectionDropdown(
@@ -455,9 +483,10 @@ class _AddCourseScreenState extends State<AddCourseScreen> {
         Text(
           '${_getStartTime(_startSection)} — ${_getEndTime(_endSection)}',
           style: const TextStyle(
-              fontSize: 12,
-              color: AppColors.primary,
-              fontWeight: FontWeight.w600),
+            fontSize: 12,
+            color: AppColors.primary,
+            fontWeight: FontWeight.w600,
+          ),
         ),
       ],
     );
@@ -466,15 +495,19 @@ class _AddCourseScreenState extends State<AddCourseScreen> {
   Widget _buildWeekPicker({int crossAxisCount = 5}) {
     final allSelected = _selectedWeeks.length == widget.totalWeeks;
     // 单周：1,3,5...  双周：2,4,6...
-    final oddWeeks = List.generate(widget.totalWeeks, (i) => i + 1)
-        .where((w) => w.isOdd)
-        .toSet();
-    final evenWeeks = List.generate(widget.totalWeeks, (i) => i + 1)
-        .where((w) => w.isEven)
-        .toSet();
-    final isOddSelected = _selectedWeeks.containsAll(oddWeeks) &&
+    final oddWeeks = List.generate(
+      widget.totalWeeks,
+      (i) => i + 1,
+    ).where((w) => w.isOdd).toSet();
+    final evenWeeks = List.generate(
+      widget.totalWeeks,
+      (i) => i + 1,
+    ).where((w) => w.isEven).toSet();
+    final isOddSelected =
+        _selectedWeeks.containsAll(oddWeeks) &&
         _selectedWeeks.difference(oddWeeks).isEmpty;
-    final isEvenSelected = _selectedWeeks.containsAll(evenWeeks) &&
+    final isEvenSelected =
+        _selectedWeeks.containsAll(evenWeeks) &&
         _selectedWeeks.difference(evenWeeks).isEmpty;
 
     return Column(
@@ -483,8 +516,10 @@ class _AddCourseScreenState extends State<AddCourseScreen> {
         // 顶部：已选信息 + 全选
         Row(
           children: [
-            Text('已选 ${_selectedWeeks.length} / ${widget.totalWeeks} 周',
-                style: const TextStyle(fontSize: 12, color: Color(0xFFAAAAAA))),
+            Text(
+              '已选 ${_selectedWeeks.length} / ${widget.totalWeeks} 周',
+              style: const TextStyle(fontSize: 12, color: Color(0xFFAAAAAA)),
+            ),
             const Spacer(),
             _QuickChip(
               label: '全选',
@@ -494,7 +529,8 @@ class _AddCourseScreenState extends State<AddCourseScreen> {
                   _selectedWeeks.clear();
                 } else {
                   _selectedWeeks = Set<int>.from(
-                      List.generate(widget.totalWeeks, (i) => i + 1));
+                    List.generate(widget.totalWeeks, (i) => i + 1),
+                  );
                 }
               }),
             ),
@@ -560,18 +596,19 @@ class _AddCourseScreenState extends State<AddCourseScreen> {
                   color: selected
                       ? AppColors.primary
                       : isOdd
-                          ? AppColors.inputFill
-                          : const Color(0xFFE8F4FD),
+                      ? AppColors.inputFill
+                      : const Color(0xFFE8F4FD),
                   borderRadius: BorderRadius.circular(8),
                 ),
                 child: Center(
-                  child: Text('$week',
-                      style: TextStyle(
-                          fontSize: 13,
-                          fontWeight: FontWeight.w600,
-                          color: selected
-                              ? Colors.white
-                              : AppColors.textBody)),
+                  child: Text(
+                    '$week',
+                    style: TextStyle(
+                      fontSize: 13,
+                      fontWeight: FontWeight.w600,
+                      color: selected ? Colors.white : AppColors.textBody,
+                    ),
+                  ),
                 ),
               ),
             );
@@ -612,7 +649,12 @@ class _AddCourseScreenState extends State<AddCourseScreen> {
                   ? Border.all(color: color.withValues(alpha: 0.5), width: 3)
                   : null,
               boxShadow: selected
-                  ? [BoxShadow(color: color.withValues(alpha: 0.5), blurRadius: 12)]
+                  ? [
+                      BoxShadow(
+                        color: color.withValues(alpha: 0.5),
+                        blurRadius: 12,
+                      ),
+                    ]
                   : [],
             ),
             child: selected
@@ -657,16 +699,21 @@ class _QuickChip extends StatelessWidget {
           mainAxisSize: MainAxisSize.min,
           children: [
             if (icon != null) ...[
-              Icon(icon,
-                  size: 14,
-                  color: active ? Colors.white : AppColors.primary),
+              Icon(
+                icon,
+                size: 14,
+                color: active ? Colors.white : AppColors.primary,
+              ),
               const SizedBox(width: 4),
             ],
-            Text(label,
-                style: TextStyle(
-                    fontSize: 12,
-                    fontWeight: FontWeight.w700,
-                    color: active ? Colors.white : AppColors.primary)),
+            Text(
+              label,
+              style: TextStyle(
+                fontSize: 12,
+                fontWeight: FontWeight.w700,
+                color: active ? Colors.white : AppColors.primary,
+              ),
+            ),
           ],
         ),
       ),
@@ -694,8 +741,10 @@ class _LegendDot extends StatelessWidget {
           ),
         ),
         const SizedBox(width: 4),
-        Text(label,
-            style: const TextStyle(fontSize: 10, color: AppColors.textSecondary)),
+        Text(
+          label,
+          style: const TextStyle(fontSize: 10, color: AppColors.textSecondary),
+        ),
       ],
     );
   }
@@ -760,9 +809,10 @@ class _SectionDropdown extends StatelessWidget {
         underline: const SizedBox.shrink(),
         dropdownColor: Colors.white,
         style: const TextStyle(
-            color: AppColors.textPrimary,
-            fontSize: 14,
-            fontWeight: FontWeight.w600),
+          color: AppColors.textPrimary,
+          fontSize: 14,
+          fontWeight: FontWeight.w600,
+        ),
         items: List.generate(max - min + 1, (i) {
           final s = min + i;
           return DropdownMenuItem(value: s, child: Text('第 $s 节'));

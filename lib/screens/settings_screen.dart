@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:intl/intl.dart';
+import 'package:url_launcher/url_launcher.dart';
 import '../models/schedule.dart';
 import '../services/course_service.dart';
 import '../services/import_export_service.dart';
@@ -18,6 +19,13 @@ class SettingsScreen extends StatefulWidget {
 }
 
 class _SettingsScreenState extends State<SettingsScreen> {
+  static final _licenseUrl = Uri.parse(
+    'https://github.com/Biapenam/open_schedule/blob/main/LICENSE',
+  );
+  static final _githubUrl = Uri.parse(
+    'https://github.com/Biapenam/open_schedule',
+  );
+
   final CourseService _service = CourseService();
 
   String _scheduleName = '我的课表';
@@ -76,9 +84,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
     final schedule = await _service.getActiveSchedule();
     if (!mounted) return;
     if (schedule == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('当前没有可导出的课表')),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('当前没有可导出的课表')));
       return;
     }
     final courses = await _service.loadCoursesFor(schedule.id);
@@ -101,7 +109,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
       // 键盘弹出时把面板抬到输入法上方，避免挡住口令输入框
       builder: (sheetContext) => Padding(
         padding: EdgeInsets.only(
-            bottom: MediaQuery.of(sheetContext).viewInsets.bottom),
+          bottom: MediaQuery.of(sheetContext).viewInsets.bottom,
+        ),
         child: ImportSheet(service: _service),
       ),
     );
@@ -148,22 +157,29 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 width: 40,
                 height: 4,
                 decoration: BoxDecoration(
-                    color: Colors.grey[300],
-                    borderRadius: BorderRadius.circular(2)),
+                  color: Colors.grey[300],
+                  borderRadius: BorderRadius.circular(2),
+                ),
               ),
             ),
             const Padding(
               padding: EdgeInsets.fromLTRB(20, 0, 20, 12),
               child: Row(
                 children: [
-                  Icon(Icons.history_rounded,
-                      color: AppColors.primary, size: 20),
+                  Icon(
+                    Icons.history_rounded,
+                    color: AppColors.primary,
+                    size: 20,
+                  ),
                   SizedBox(width: 8),
-                  Text('更新日志',
-                      style: TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.w700,
-                          color: AppColors.textPrimary)),
+                  Text(
+                    '更新日志',
+                    style: TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w700,
+                      color: AppColors.textPrimary,
+                    ),
+                  ),
                 ],
               ),
             ),
@@ -174,89 +190,69 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 padding: const EdgeInsets.all(20),
                 children: const [
                   _ChangelogEntry(
-                    version: 'v1.1.4',
+                    version: 'v1.1.5',
                     isLatest: true,
-                    changes: [
-                      '新增了显示非本周课程的功能',
-                    ],
+                    changes: ['将应用更名为 Day Schedule', '添加了开源许可证', '修复了一些已知问题'],
+                  ),
+                  SizedBox(height: 16),
+                  _ChangelogEntry(
+                    version: 'v1.1.4',
+                    isLatest: false,
+                    changes: ['新增了显示非本周课程的功能'],
                   ),
                   SizedBox(height: 16),
                   _ChangelogEntry(
                     version: 'v1.1.3',
                     isLatest: false,
-                    changes: [
-                      '使用吃白饭的蓝色大肥鱼修复了一些已知问题、优化了使用体验和性能开销',
-                    ],
+                    changes: ['使用吃白饭的蓝色大肥鱼修复了一些已知问题、优化了使用体验和性能开销'],
                   ),
                   SizedBox(height: 16),
                   _ChangelogEntry(
                     version: 'v1.1.2',
                     isLatest: false,
-                    changes: [
-                      '新增了对Pad大屏设备的适配（测试中）',
-                      '修复了已知问题',
-                      '优化了性能开销',
-                    ],
+                    changes: ['新增了对Pad大屏设备的适配（测试中）', '修复了已知问题', '优化了性能开销'],
                   ),
                   SizedBox(height: 16),
                   _ChangelogEntry(
                     version: 'v1.1.1',
                     isLatest: false,
-                    changes: [
-                      '修复了已知问题',
-                    ],
+                    changes: ['修复了已知问题'],
                   ),
                   SizedBox(height: 16),
                   _ChangelogEntry(
                     version: 'v1.1.0',
                     isLatest: false,
-                    changes: [
-                      '新增多课表管理功能，支持在不同课表之间切换',
-                      '修复了已知问题',
-                    ],
+                    changes: ['新增多课表管理功能，支持在不同课表之间切换', '修复了已知问题'],
                   ),
                   SizedBox(height: 16),
                   _ChangelogEntry(
                     version: 'v1.0.6',
                     isLatest: false,
-                    changes: [
-                      '修复了已知问题',
-                    ],
+                    changes: ['修复了已知问题'],
                   ),
                   SizedBox(height: 16),
                   _ChangelogEntry(
                     version: 'v1.0.5',
                     isLatest: false,
-                    changes: [
-                      '优化了使用体验',
-                      '修复了已知问题',
-                    ],
+                    changes: ['优化了使用体验', '修复了已知问题'],
                   ),
                   SizedBox(height: 16),
                   _ChangelogEntry(
                     version: 'v1.0.4',
                     isLatest: false,
-                    changes: [
-                      '修复了已知问题',
-                    ],
+                    changes: ['修复了已知问题'],
                   ),
                   SizedBox(height: 16),
                   _ChangelogEntry(
                     version: 'v1.0.3',
                     isLatest: false,
-                    changes: [
-                      '优化了使用体验',
-                      '修复了已知问题',
-                    ],
+                    changes: ['优化了使用体验', '修复了已知问题'],
                   ),
                   SizedBox(height: 16),
                   _ChangelogEntry(
                     version: 'v1.0.2',
                     isLatest: false,
-                    changes: [
-                      '优化了使用体验',
-                      '修复了已知问题',
-                    ],
+                    changes: ['优化了使用体验', '修复了已知问题'],
                   ),
                   SizedBox(height: 16),
                   _ChangelogEntry(
@@ -264,7 +260,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     isLatest: false,
                     changes: [
                       '新增桌面小组件功能（测试中）',
-                      '应用更名为 Open Schedule',
+                      '将应用更名为 Open Schedule',
                       '优化了使用体验',
                     ],
                   ),
@@ -295,17 +291,18 @@ class _SettingsScreenState extends State<SettingsScreen> {
           content: const Text('设置已保存'),
           backgroundColor: AppColors.primary,
           behavior: SnackBarBehavior.floating,
-          shape:
-              RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12),
+          ),
         ),
       );
       Navigator.pop(context, true);
     } catch (e) {
       debugPrint('save settings failed: $e');
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('保存设置失败，请重试')),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('保存设置失败，请重试')));
     } finally {
       if (mounted) setState(() => _saving = false);
     }
@@ -313,8 +310,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
   // 编辑某节课的开始时间
   Future<void> _pickSectionTime(int index) async {
-    final current =
-        _sectionStartTimes.length > index ? _sectionStartTimes[index] : '08:00';
+    final current = _sectionStartTimes.length > index
+        ? _sectionStartTimes[index]
+        : '08:00';
     final parts = current.split(':');
     final initTime = TimeOfDay(
       hour: int.parse(parts[0]),
@@ -372,46 +370,73 @@ class _SettingsScreenState extends State<SettingsScreen> {
                       children: [
                         ListTile(
                           leading: _iconBox(Icons.swap_horiz_rounded),
-                          title: const Text('切换 / 管理课表',
-                              style: TextStyle(
-                                  fontSize: 14,
-                                  fontWeight: FontWeight.w600,
-                                  color: AppColors.textPrimary)),
-                          subtitle: Text('当前：$_scheduleName',
-                              style: const TextStyle(
-                                  fontSize: 12, color: AppColors.textSecondary)),
-                          trailing: const Icon(Icons.chevron_right_rounded,
-                              color: Color(0xFFCCCCDD)),
+                          title: const Text(
+                            '切换 / 管理课表',
+                            style: TextStyle(
+                              fontSize: 14,
+                              fontWeight: FontWeight.w600,
+                              color: AppColors.textPrimary,
+                            ),
+                          ),
+                          subtitle: Text(
+                            '当前：$_scheduleName',
+                            style: const TextStyle(
+                              fontSize: 12,
+                              color: AppColors.textSecondary,
+                            ),
+                          ),
+                          trailing: const Icon(
+                            Icons.chevron_right_rounded,
+                            color: Color(0xFFCCCCDD),
+                          ),
                           onTap: _openScheduleManager,
                         ),
                         const Divider(height: 1),
                         ListTile(
                           leading: _iconBox(Icons.upload_rounded),
-                          title: const Text('导出课表',
-                              style: TextStyle(
-                                  fontSize: 14,
-                                  fontWeight: FontWeight.w600,
-                                  color: AppColors.textPrimary)),
-                          subtitle: const Text('生成口令，可在另一台设备快速恢复',
-                              style: TextStyle(
-                                  fontSize: 12, color: AppColors.textSecondary)),
-                          trailing: const Icon(Icons.chevron_right_rounded,
-                              color: Color(0xFFCCCCDD)),
+                          title: const Text(
+                            '导出课表',
+                            style: TextStyle(
+                              fontSize: 14,
+                              fontWeight: FontWeight.w600,
+                              color: AppColors.textPrimary,
+                            ),
+                          ),
+                          subtitle: const Text(
+                            '生成口令，可在另一台设备快速恢复',
+                            style: TextStyle(
+                              fontSize: 12,
+                              color: AppColors.textSecondary,
+                            ),
+                          ),
+                          trailing: const Icon(
+                            Icons.chevron_right_rounded,
+                            color: Color(0xFFCCCCDD),
+                          ),
                           onTap: _openExport,
                         ),
                         const Divider(height: 1),
                         ListTile(
                           leading: _iconBox(Icons.download_rounded),
-                          title: const Text('从口令导入',
-                              style: TextStyle(
-                                  fontSize: 14,
-                                  fontWeight: FontWeight.w600,
-                                  color: AppColors.textPrimary)),
-                          subtitle: const Text('粘贴口令，恢复课表到本机',
-                              style: TextStyle(
-                                  fontSize: 12, color: AppColors.textSecondary)),
-                          trailing: const Icon(Icons.chevron_right_rounded,
-                              color: Color(0xFFCCCCDD)),
+                          title: const Text(
+                            '从口令导入',
+                            style: TextStyle(
+                              fontSize: 14,
+                              fontWeight: FontWeight.w600,
+                              color: AppColors.textPrimary,
+                            ),
+                          ),
+                          subtitle: const Text(
+                            '粘贴口令，恢复课表到本机',
+                            style: TextStyle(
+                              fontSize: 12,
+                              color: AppColors.textSecondary,
+                            ),
+                          ),
+                          trailing: const Icon(
+                            Icons.chevron_right_rounded,
+                            color: Color(0xFFCCCCDD),
+                          ),
                           onTap: _openImport,
                         ),
                       ],
@@ -436,16 +461,16 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
                     // ── 课程时间 ──
                     _buildCard(
-                      title: '课程时间设置',
-                      icon: Icons.schedule_rounded,
-                      children: [
-                        _buildDailySectionsTile(),
-                        const Divider(height: 1),
-                        _buildDurationTile(),
-                        const Divider(height: 1),
-                        _buildSectionTimesList(),
-                      ],
-                    )
+                          title: '课程时间设置',
+                          icon: Icons.schedule_rounded,
+                          children: [
+                            _buildDailySectionsTile(),
+                            const Divider(height: 1),
+                            _buildDurationTile(),
+                            const Divider(height: 1),
+                            _buildSectionTimesList(),
+                          ],
+                        )
                         .animate()
                         .fadeIn(delay: 100.ms, duration: 400.ms)
                         .slideY(begin: 0.2),
@@ -453,47 +478,68 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     const SizedBox(height: 16),
 
                     _buildCard(
-                      title: '桌面小卡片',
-                      icon: Icons.widgets_rounded,
-                      children: [
-                        ListTile(
-                          leading: _iconBox(Icons.add_to_home_screen_rounded),
-                          title: const Text('添加桌面小卡片',
-                              style: TextStyle(
+                          title: '桌面小卡片',
+                          icon: Icons.widgets_rounded,
+                          children: [
+                            ListTile(
+                              leading: _iconBox(
+                                Icons.add_to_home_screen_rounded,
+                              ),
+                              title: const Text(
+                                '添加桌面小卡片',
+                                style: TextStyle(
                                   fontSize: 14,
                                   fontWeight: FontWeight.w600,
-                                  color: AppColors.textPrimary)),
-                          subtitle: const Text('在桌面显示今天的课程',
-                              style: TextStyle(
-                                  fontSize: 12, color: AppColors.textSecondary)),
-                          trailing: _addingWidget
-                              ? const SizedBox(
-                                  width: 20,
-                                  height: 20,
-                                  child:
-                                      CircularProgressIndicator(strokeWidth: 2),
-                                )
-                              : const Icon(Icons.chevron_right_rounded,
-                                  color: Color(0xFFCCCCDD)),
-                          onTap: _addingWidget ? null : _requestPinWidget,
-                        ),
-                        const Divider(height: 1),
-                        ListTile(
-                          leading: _iconBox(Icons.help_outline_rounded),
-                          title: const Text('如何手动添加',
-                              style: TextStyle(
+                                  color: AppColors.textPrimary,
+                                ),
+                              ),
+                              subtitle: const Text(
+                                '在桌面显示今天的课程',
+                                style: TextStyle(
+                                  fontSize: 12,
+                                  color: AppColors.textSecondary,
+                                ),
+                              ),
+                              trailing: _addingWidget
+                                  ? const SizedBox(
+                                      width: 20,
+                                      height: 20,
+                                      child: CircularProgressIndicator(
+                                        strokeWidth: 2,
+                                      ),
+                                    )
+                                  : const Icon(
+                                      Icons.chevron_right_rounded,
+                                      color: Color(0xFFCCCCDD),
+                                    ),
+                              onTap: _addingWidget ? null : _requestPinWidget,
+                            ),
+                            const Divider(height: 1),
+                            ListTile(
+                              leading: _iconBox(Icons.help_outline_rounded),
+                              title: const Text(
+                                '如何手动添加',
+                                style: TextStyle(
                                   fontSize: 14,
                                   fontWeight: FontWeight.w600,
-                                  color: AppColors.textPrimary)),
-                          subtitle: const Text('适用于系统没有弹出添加确认时',
-                              style: TextStyle(
-                                  fontSize: 12, color: AppColors.textSecondary)),
-                          trailing: const Icon(Icons.chevron_right_rounded,
-                              color: Color(0xFFCCCCDD)),
-                          onTap: _showManualWidgetGuide,
-                        ),
-                      ],
-                    )
+                                  color: AppColors.textPrimary,
+                                ),
+                              ),
+                              subtitle: const Text(
+                                '适用于系统没有弹出添加确认时',
+                                style: TextStyle(
+                                  fontSize: 12,
+                                  color: AppColors.textSecondary,
+                                ),
+                              ),
+                              trailing: const Icon(
+                                Icons.chevron_right_rounded,
+                                color: Color(0xFFCCCCDD),
+                              ),
+                              onTap: _showManualWidgetGuide,
+                            ),
+                          ],
+                        )
                         .animate()
                         .fadeIn(delay: 200.ms, duration: 400.ms)
                         .slideY(begin: 0.2),
@@ -502,27 +548,39 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
                     // ── 关于 ──
                     _buildCard(
-                      title: '关于',
-                      icon: Icons.info_rounded,
-                      children: [
-                        _buildInfoTile('应用名称', 'Open Schedule'),
-                        const Divider(height: 1),
-                        _buildInfoTile('版本', '1.1.4'),
-                        const Divider(height: 1),
-                        _buildInfoTile('开发者', 'Sora'),
-                        const Divider(height: 1),
-                        ListTile(
-                          title: const Text('更新日志',
-                              style: TextStyle(
+                          title: '关于',
+                          icon: Icons.info_rounded,
+                          children: [
+                            _buildInfoTile('应用名称', 'Day Schedule'),
+                            const Divider(height: 1),
+                            _buildInfoTile('版本', '1.1.5'),
+                            const Divider(height: 1),
+                            _buildInfoTile('开发者', 'Sora'),
+                            const Divider(height: 1),
+                            _buildLinkTile(title: '开源许可证', uri: _licenseUrl),
+                            const Divider(height: 1),
+                            _buildLinkTile(
+                              title: 'GitHub 项目主页',
+                              uri: _githubUrl,
+                            ),
+                            const Divider(height: 1),
+                            ListTile(
+                              title: const Text(
+                                '更新日志',
+                                style: TextStyle(
                                   fontSize: 14,
                                   fontWeight: FontWeight.w600,
-                                  color: AppColors.textPrimary)),
-                          trailing: const Icon(Icons.chevron_right_rounded,
-                              color: Color(0xFFCCCCDD)),
-                          onTap: _showChangelog,
-                        ),
-                      ],
-                    )
+                                  color: AppColors.textPrimary,
+                                ),
+                              ),
+                              trailing: const Icon(
+                                Icons.chevron_right_rounded,
+                                color: Color(0xFFCCCCDD),
+                              ),
+                              onTap: _showChangelog,
+                            ),
+                          ],
+                        )
                         .animate()
                         .fadeIn(delay: 300.ms, duration: 400.ms)
                         .slideY(begin: 0.2),
@@ -536,19 +594,28 @@ class _SettingsScreenState extends State<SettingsScreen> {
                               width: 18,
                               height: 18,
                               child: CircularProgressIndicator(
-                                  strokeWidth: 2, color: Colors.white))
+                                strokeWidth: 2,
+                                color: Colors.white,
+                              ),
+                            )
                           : const Icon(Icons.save_rounded),
-                      label: const Text('保存设置',
-                          style: TextStyle(
-                              fontSize: 16, fontWeight: FontWeight.w700)),
+                      label: const Text(
+                        '保存设置',
+                        style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
                       style: FilledButton.styleFrom(
                         shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(16)),
+                          borderRadius: BorderRadius.circular(16),
+                        ),
                       ),
                     ).animate().fadeIn(delay: 400.ms, duration: 400.ms),
 
                     SizedBox(
-                        height: MediaQuery.of(context).padding.bottom + 16),
+                      height: MediaQuery.of(context).padding.bottom + 16,
+                    ),
                   ],
                 ),
               ),
@@ -582,11 +649,14 @@ class _SettingsScreenState extends State<SettingsScreen> {
               children: [
                 Icon(icon, color: AppColors.primary, size: 18),
                 const SizedBox(width: 8),
-                Text(title,
-                    style: const TextStyle(
-                        fontSize: 13,
-                        fontWeight: FontWeight.w700,
-                        color: AppColors.primary)),
+                Text(
+                  title,
+                  style: const TextStyle(
+                    fontSize: 13,
+                    fontWeight: FontWeight.w700,
+                    color: AppColors.primary,
+                  ),
+                ),
               ],
             ),
           ),
@@ -606,10 +676,13 @@ class _SettingsScreenState extends State<SettingsScreen> {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(
-              accepted ? '已请求添加小卡片；如桌面未弹出确认，请手动添加' : _pinWidgetErrorText(result)),
+            accepted ? '已请求添加小卡片；如桌面未弹出确认，请手动添加' : _pinWidgetErrorText(result),
+          ),
           backgroundColor: AppColors.primary,
           behavior: SnackBarBehavior.floating,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12),
+          ),
         ),
       );
     } finally {
@@ -622,8 +695,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
       'launcher_not_supported' => '当前桌面不支持快捷添加小卡片',
       'unsupported_android_version' ||
       'launcher_rejected' ||
-      'illegal_state' =>
-        '请在桌面小组件列表中添加 Open Schedule',
+      'illegal_state' => '请在桌面小组件列表中添加 Day Schedule',
       _ => '当前桌面无法快捷添加小卡片',
     };
   }
@@ -657,31 +729,28 @@ class _SettingsScreenState extends State<SettingsScreen> {
               children: [
                 Icon(Icons.widgets_rounded, color: AppColors.primary, size: 20),
                 SizedBox(width: 8),
-                Text('手动添加桌面小卡片',
-                    style: TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.w700,
-                        color: AppColors.textPrimary)),
+                Text(
+                  '手动添加桌面小卡片',
+                  style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w700,
+                    color: AppColors.textPrimary,
+                  ),
+                ),
               ],
             ),
             const SizedBox(height: 16),
-            const _GuideStep(
-              index: 1,
-              text: '回到手机桌面，长按桌面空白处。',
-            ),
-            const _GuideStep(
-              index: 2,
-              text: '进入“小组件”或“插件”列表。',
-            ),
-            const _GuideStep(
-              index: 3,
-              text: '找到 Open Schedule，选择课程表小卡片并添加到桌面。',
-            ),
+            const _GuideStep(index: 1, text: '回到手机桌面，长按桌面空白处。'),
+            const _GuideStep(index: 2, text: '进入“小组件”或“插件”列表。'),
+            const _GuideStep(index: 3, text: '找到 Day Schedule，选择课程表小卡片并添加到桌面。'),
             const SizedBox(height: 12),
             const Text(
               '不同系统的入口名称可能略有不同。若快捷添加没有弹出确认，请使用这条方式。',
               style: TextStyle(
-                  fontSize: 12, color: AppColors.textSecondary, height: 1.4),
+                fontSize: 12,
+                color: AppColors.textSecondary,
+                height: 1.4,
+              ),
             ),
           ],
         ),
@@ -695,15 +764,22 @@ class _SettingsScreenState extends State<SettingsScreen> {
         : '未设置';
     return ListTile(
       leading: _iconBox(Icons.calendar_today_rounded),
-      title: const Text('学期开始日期',
-          style: TextStyle(
-              fontSize: 14,
-              fontWeight: FontWeight.w600,
-              color: AppColors.textPrimary)),
-      subtitle: Text(formatted,
-          style: const TextStyle(fontSize: 12, color: AppColors.textSecondary)),
-      trailing:
-          const Icon(Icons.chevron_right_rounded, color: Color(0xFFCCCCDD)),
+      title: const Text(
+        '学期开始日期',
+        style: TextStyle(
+          fontSize: 14,
+          fontWeight: FontWeight.w600,
+          color: AppColors.textPrimary,
+        ),
+      ),
+      subtitle: Text(
+        formatted,
+        style: const TextStyle(fontSize: 12, color: AppColors.textSecondary),
+      ),
+      trailing: const Icon(
+        Icons.chevron_right_rounded,
+        color: Color(0xFFCCCCDD),
+      ),
       onTap: _pickDate,
     );
   }
@@ -711,13 +787,18 @@ class _SettingsScreenState extends State<SettingsScreen> {
   Widget _buildWeeksTile() {
     return ListTile(
       leading: _iconBox(Icons.view_week_rounded),
-      title: const Text('学期总周数',
-          style: TextStyle(
-              fontSize: 14,
-              fontWeight: FontWeight.w600,
-              color: AppColors.textPrimary)),
-      subtitle: Text('当前：$_totalWeeks 周',
-          style: const TextStyle(fontSize: 12, color: AppColors.textSecondary)),
+      title: const Text(
+        '学期总周数',
+        style: TextStyle(
+          fontSize: 14,
+          fontWeight: FontWeight.w600,
+          color: AppColors.textPrimary,
+        ),
+      ),
+      subtitle: Text(
+        '当前：$_totalWeeks 周',
+        style: const TextStyle(fontSize: 12, color: AppColors.textSecondary),
+      ),
       trailing: _stepper(
         value: _totalWeeks,
         min: 1,
@@ -730,13 +811,18 @@ class _SettingsScreenState extends State<SettingsScreen> {
   Widget _buildShowNonCurrentWeekTile() {
     return SwitchListTile(
       secondary: _iconBox(Icons.event_note_rounded),
-      title: const Text('显示非本周课程',
-          style: TextStyle(
-              fontSize: 14,
-              fontWeight: FontWeight.w600,
-              color: AppColors.textPrimary)),
-      subtitle: const Text('在当前周课表空位处显示其他周次课程',
-          style: TextStyle(fontSize: 12, color: AppColors.textSecondary)),
+      title: const Text(
+        '显示非本周课程',
+        style: TextStyle(
+          fontSize: 14,
+          fontWeight: FontWeight.w600,
+          color: AppColors.textPrimary,
+        ),
+      ),
+      subtitle: const Text(
+        '在当前周课表空位处显示其他周次课程',
+        style: TextStyle(fontSize: 12, color: AppColors.textSecondary),
+      ),
       value: _showNonCurrentWeekCourses,
       activeTrackColor: AppColors.primary,
       onChanged: (v) => setState(() => _showNonCurrentWeekCourses = v),
@@ -746,13 +832,18 @@ class _SettingsScreenState extends State<SettingsScreen> {
   Widget _buildDailySectionsTile() {
     return ListTile(
       leading: _iconBox(Icons.format_list_numbered_rounded),
-      title: const Text('每天课程节数',
-          style: TextStyle(
-              fontSize: 14,
-              fontWeight: FontWeight.w600,
-              color: AppColors.textPrimary)),
-      subtitle: Text('当前：$_dailySections 节',
-          style: const TextStyle(fontSize: 12, color: AppColors.textSecondary)),
+      title: const Text(
+        '每天课程节数',
+        style: TextStyle(
+          fontSize: 14,
+          fontWeight: FontWeight.w600,
+          color: AppColors.textPrimary,
+        ),
+      ),
+      subtitle: Text(
+        '当前：$_dailySections 节',
+        style: const TextStyle(fontSize: 12, color: AppColors.textSecondary),
+      ),
       trailing: _stepper(
         value: _dailySections,
         min: 4,
@@ -765,13 +856,18 @@ class _SettingsScreenState extends State<SettingsScreen> {
   Widget _buildDurationTile() {
     return ListTile(
       leading: _iconBox(Icons.timer_rounded),
-      title: const Text('每节课时长',
-          style: TextStyle(
-              fontSize: 14,
-              fontWeight: FontWeight.w600,
-              color: AppColors.textPrimary)),
-      subtitle: Text('当前：$_sectionDuration 分钟',
-          style: const TextStyle(fontSize: 12, color: AppColors.textSecondary)),
+      title: const Text(
+        '每节课时长',
+        style: TextStyle(
+          fontSize: 14,
+          fontWeight: FontWeight.w600,
+          color: AppColors.textPrimary,
+        ),
+      ),
+      subtitle: Text(
+        '当前：$_sectionDuration 分钟',
+        style: const TextStyle(fontSize: 12, color: AppColors.textSecondary),
+      ),
       trailing: _stepper(
         value: _sectionDuration,
         min: 20,
@@ -788,51 +884,70 @@ class _SettingsScreenState extends State<SettingsScreen> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text('各节开始时间',
-              style: TextStyle(
-                  fontSize: 13,
-                  fontWeight: FontWeight.w600,
-                  color: AppColors.textPrimary)),
+          const Text(
+            '各节开始时间',
+            style: TextStyle(
+              fontSize: 13,
+              fontWeight: FontWeight.w600,
+              color: AppColors.textPrimary,
+            ),
+          ),
           const SizedBox(height: 4),
-          const Text('点击时间可修改，结束时间根据课程时长自动计算',
-              style: TextStyle(fontSize: 11, color: AppColors.textSecondary)),
+          const Text(
+            '点击时间可修改，结束时间根据课程时长自动计算',
+            style: TextStyle(fontSize: 11, color: AppColors.textSecondary),
+          ),
           const SizedBox(height: 12),
           Wrap(
             spacing: 8,
             runSpacing: 8,
             children: List.generate(_dailySections, (i) {
               final section = i + 1;
-              final startTime =
-                  Schedule.sectionStartTimeAt(_sectionStartTimes, section);
-              final endTime =
-                  Schedule.calcEndTime(startTime, _sectionDuration);
+              final startTime = Schedule.sectionStartTimeAt(
+                _sectionStartTimes,
+                section,
+              );
+              final endTime = Schedule.calcEndTime(startTime, _sectionDuration);
               return GestureDetector(
                 onTap: () => _pickSectionTime(i),
                 child: Container(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 10, vertical: 7),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 10,
+                    vertical: 7,
+                  ),
                   decoration: BoxDecoration(
                     color: AppColors.inputFill,
                     borderRadius: BorderRadius.circular(10),
                     border: Border.all(
-                        color: AppColors.primary.withValues(alpha: 0.2)),
+                      color: AppColors.primary.withValues(alpha: 0.2),
+                    ),
                   ),
                   child: Column(
                     children: [
-                      Text('第${i + 1}节',
-                          style: const TextStyle(
-                              fontSize: 10,
-                              color: AppColors.primary,
-                              fontWeight: FontWeight.w700)),
+                      Text(
+                        '第${i + 1}节',
+                        style: const TextStyle(
+                          fontSize: 10,
+                          color: AppColors.primary,
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
                       const SizedBox(height: 3),
-                      Text(startTime,
-                          style: const TextStyle(
-                              fontSize: 12,
-                              fontWeight: FontWeight.w700,
-                              color: AppColors.textPrimary)),
-                      Text(endTime,
-                          style: const TextStyle(
-                              fontSize: 10, color: AppColors.textSecondary)),
+                      Text(
+                        startTime,
+                        style: const TextStyle(
+                          fontSize: 12,
+                          fontWeight: FontWeight.w700,
+                          color: AppColors.textPrimary,
+                        ),
+                      ),
+                      Text(
+                        endTime,
+                        style: const TextStyle(
+                          fontSize: 10,
+                          color: AppColors.textSecondary,
+                        ),
+                      ),
                     ],
                   ),
                 ),
@@ -846,14 +961,47 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
   Widget _buildInfoTile(String label, String value) {
     return ListTile(
-      title: Text(label,
-          style: const TextStyle(
-              fontSize: 14,
-              fontWeight: FontWeight.w600,
-              color: AppColors.textPrimary)),
-      trailing: Text(value,
-          style: const TextStyle(fontSize: 13, color: AppColors.textSecondary)),
+      title: Text(
+        label,
+        style: const TextStyle(
+          fontSize: 14,
+          fontWeight: FontWeight.w600,
+          color: AppColors.textPrimary,
+        ),
+      ),
+      trailing: Text(
+        value,
+        style: const TextStyle(fontSize: 13, color: AppColors.textSecondary),
+      ),
     );
+  }
+
+  Widget _buildLinkTile({required String title, required Uri uri}) {
+    return ListTile(
+      title: Text(
+        title,
+        style: const TextStyle(
+          fontSize: 14,
+          fontWeight: FontWeight.w600,
+          color: AppColors.textPrimary,
+        ),
+      ),
+      trailing: const Icon(
+        Icons.open_in_new_rounded,
+        color: Color(0xFFCCCCDD),
+        size: 19,
+      ),
+      onTap: () => _openExternalLink(uri),
+    );
+  }
+
+  Future<void> _openExternalLink(Uri uri) async {
+    final opened = await launchUrl(uri, mode: LaunchMode.externalApplication);
+    if (!opened && mounted) {
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('暂时无法打开链接，请稍后重试')));
+    }
   }
 
   Widget _iconBox(IconData icon) {
@@ -886,11 +1034,14 @@ class _SettingsScreenState extends State<SettingsScreen> {
           color: AppColors.primary,
           iconSize: 20,
         ),
-        Text('$value',
-            style: const TextStyle(
-                fontSize: 15,
-                fontWeight: FontWeight.w700,
-                color: AppColors.textPrimary)),
+        Text(
+          '$value',
+          style: const TextStyle(
+            fontSize: 15,
+            fontWeight: FontWeight.w700,
+            color: AppColors.textPrimary,
+          ),
+        ),
         IconButton(
           icon: const Icon(Icons.add_rounded),
           onPressed: value < max
@@ -928,9 +1079,7 @@ class _ChangelogEntry extends StatelessWidget {
               width: 12,
               height: 12,
               decoration: BoxDecoration(
-                color: isLatest
-                    ? AppColors.primary
-                    : const Color(0xFFCCCCDD),
+                color: isLatest ? AppColors.primary : const Color(0xFFCCCCDD),
                 shape: BoxShape.circle,
               ),
             ),
@@ -946,60 +1095,76 @@ class _ChangelogEntry extends StatelessWidget {
               Row(
                 children: [
                   Container(
-                    padding:
-                        const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 8,
+                      vertical: 3,
+                    ),
                     decoration: BoxDecoration(
-                      color: isLatest
-                          ? AppColors.primary
-                          : AppColors.inputFill,
+                      color: isLatest ? AppColors.primary : AppColors.inputFill,
                       borderRadius: BorderRadius.circular(8),
                     ),
-                    child: Text(version,
-                        style: TextStyle(
-                            fontSize: 12,
-                            fontWeight: FontWeight.w700,
-                            color: isLatest
-                                ? Colors.white
-                                : AppColors.textSecondary)),
+                    child: Text(
+                      version,
+                      style: TextStyle(
+                        fontSize: 12,
+                        fontWeight: FontWeight.w700,
+                        color: isLatest
+                            ? Colors.white
+                            : AppColors.textSecondary,
+                      ),
+                    ),
                   ),
                   if (isLatest) ...[
                     const SizedBox(width: 8),
                     Container(
                       padding: const EdgeInsets.symmetric(
-                          horizontal: 6, vertical: 3),
+                        horizontal: 6,
+                        vertical: 3,
+                      ),
                       decoration: BoxDecoration(
                         color: AppColors.secondary.withValues(alpha: 0.1),
                         borderRadius: BorderRadius.circular(6),
                       ),
-                      child: const Text('最新',
-                          style: TextStyle(
-                              fontSize: 10,
-                              fontWeight: FontWeight.w700,
-                              color: AppColors.secondary)),
+                      child: const Text(
+                        '最新',
+                        style: TextStyle(
+                          fontSize: 10,
+                          fontWeight: FontWeight.w700,
+                          color: AppColors.secondary,
+                        ),
+                      ),
                     ),
                   ],
                 ],
               ),
               const SizedBox(height: 10),
-              ...changes.map((c) => Padding(
-                    padding: const EdgeInsets.only(bottom: 5),
-                    child: Row(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        const Text('•  ',
-                            style: TextStyle(
-                                color: AppColors.primary,
-                                fontWeight: FontWeight.w700)),
-                        Expanded(
-                          child: Text(c,
-                              style: const TextStyle(
-                                  fontSize: 13,
-                                  color: AppColors.textBody,
-                                  height: 1.4)),
+              ...changes.map(
+                (c) => Padding(
+                  padding: const EdgeInsets.only(bottom: 5),
+                  child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const Text(
+                        '•  ',
+                        style: TextStyle(
+                          color: AppColors.primary,
+                          fontWeight: FontWeight.w700,
                         ),
-                      ],
-                    ),
-                  )),
+                      ),
+                      Expanded(
+                        child: Text(
+                          c,
+                          style: const TextStyle(
+                            fontSize: 13,
+                            color: AppColors.textBody,
+                            height: 1.4,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
             ],
           ),
         ),
@@ -1012,10 +1177,7 @@ class _GuideStep extends StatelessWidget {
   final int index;
   final String text;
 
-  const _GuideStep({
-    required this.index,
-    required this.text,
-  });
+  const _GuideStep({required this.index, required this.text});
 
   @override
   Widget build(BuildContext context) {
@@ -1032,20 +1194,28 @@ class _GuideStep extends StatelessWidget {
               shape: BoxShape.circle,
             ),
             child: Center(
-              child: Text('$index',
-                  style: const TextStyle(
-                      color: Colors.white,
-                      fontSize: 12,
-                      fontWeight: FontWeight.w700)),
+              child: Text(
+                '$index',
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontSize: 12,
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
             ),
           ),
           const SizedBox(width: 10),
           Expanded(
             child: Padding(
               padding: const EdgeInsets.only(top: 2),
-              child: Text(text,
-                  style: const TextStyle(
-                      fontSize: 14, color: AppColors.textBody, height: 1.4)),
+              child: Text(
+                text,
+                style: const TextStyle(
+                  fontSize: 14,
+                  color: AppColors.textBody,
+                  height: 1.4,
+                ),
+              ),
             ),
           ),
         ],

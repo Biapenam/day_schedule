@@ -24,10 +24,8 @@ class ScheduleManagerSheet extends StatefulWidget {
   }) {
     return showAppModalSheet(
       context,
-      builder: (_) => ScheduleManagerSheet(
-        service: service,
-        onChanged: onChanged,
-      ),
+      builder: (_) =>
+          ScheduleManagerSheet(service: service, onChanged: onChanged),
     );
   }
 
@@ -81,9 +79,9 @@ class _ScheduleManagerSheetState extends State<ScheduleManagerSheet> {
       debugPrint('createSchedule failed: $e');
       if (!mounted) return;
       setState(() => _busy = false);
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('新建课表失败，请重试')),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('新建课表失败，请重试')));
     }
   }
 
@@ -106,17 +104,17 @@ class _ScheduleManagerSheetState extends State<ScheduleManagerSheet> {
     } catch (e) {
       debugPrint('renameSchedule failed: $e');
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('重命名失败，请重试')),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('重命名失败，请重试')));
     }
   }
 
   Future<void> _deleteSchedule(Schedule schedule) async {
     if (_schedules.length <= 1) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('至少需要保留一个课表')),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('至少需要保留一个课表')));
       return;
     }
     final confirmed = await showDialog<bool>(
@@ -132,9 +130,7 @@ class _ScheduleManagerSheetState extends State<ScheduleManagerSheet> {
           ),
           FilledButton(
             onPressed: () => Navigator.pop(context, true),
-            style: FilledButton.styleFrom(
-              backgroundColor: AppColors.secondary,
-            ),
+            style: FilledButton.styleFrom(backgroundColor: AppColors.secondary),
             child: const Text('删除'),
           ),
         ],
@@ -155,9 +151,9 @@ class _ScheduleManagerSheetState extends State<ScheduleManagerSheet> {
     } catch (e) {
       debugPrint('deleteSchedule failed: $e');
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('删除课表失败，请重试')),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('删除课表失败，请重试')));
     }
   }
 
@@ -178,8 +174,9 @@ class _ScheduleManagerSheetState extends State<ScheduleManagerSheet> {
           decoration: InputDecoration(
             hintText: hint,
             border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(14),
-                borderSide: BorderSide.none),
+              borderRadius: BorderRadius.circular(14),
+              borderSide: BorderSide.none,
+            ),
             filled: true,
             fillColor: AppColors.inputFill,
           ),
@@ -202,7 +199,11 @@ class _ScheduleManagerSheetState extends State<ScheduleManagerSheet> {
   Widget build(BuildContext context) {
     return Padding(
       padding: EdgeInsets.fromLTRB(
-          0, 12, 0, MediaQuery.of(context).padding.bottom + 16),
+        0,
+        12,
+        0,
+        MediaQuery.of(context).padding.bottom + 16,
+      ),
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
@@ -210,28 +211,37 @@ class _ScheduleManagerSheetState extends State<ScheduleManagerSheet> {
             width: 40,
             height: 4,
             decoration: BoxDecoration(
-                color: Colors.grey[300],
-                borderRadius: BorderRadius.circular(2)),
+              color: Colors.grey[300],
+              borderRadius: BorderRadius.circular(2),
+            ),
           ),
           const SizedBox(height: 16),
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 20),
             child: Row(
               children: [
-                const Icon(Icons.collections_bookmark_rounded,
-                    color: AppColors.primary, size: 20),
+                const Icon(
+                  Icons.collections_bookmark_rounded,
+                  color: AppColors.primary,
+                  size: 20,
+                ),
                 const SizedBox(width: 8),
-                const Text('课表管理',
-                    style: TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.w700,
-                        color: AppColors.textPrimary)),
+                const Text(
+                  '课表管理',
+                  style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w700,
+                    color: AppColors.textPrimary,
+                  ),
+                ),
                 const Spacer(),
                 TextButton.icon(
                   onPressed: _busy ? null : _createSchedule,
                   icon: const Icon(Icons.add_rounded, size: 18),
-                  label: const Text('新建',
-                      style: TextStyle(fontWeight: FontWeight.w600)),
+                  label: const Text(
+                    '新建',
+                    style: TextStyle(fontWeight: FontWeight.w600),
+                  ),
                   style: TextButton.styleFrom(
                     foregroundColor: AppColors.primary,
                   ),
@@ -244,10 +254,12 @@ class _ScheduleManagerSheetState extends State<ScheduleManagerSheet> {
             const Padding(
               padding: EdgeInsets.all(24),
               child: Center(
-                  child: SizedBox(
-                      width: 22,
-                      height: 22,
-                      child: CircularProgressIndicator(strokeWidth: 2))),
+                child: SizedBox(
+                  width: 22,
+                  height: 22,
+                  child: CircularProgressIndicator(strokeWidth: 2),
+                ),
+              ),
             )
           else
             ConstrainedBox(
@@ -293,14 +305,18 @@ class _ScheduleManagerSheetState extends State<ScheduleManagerSheet> {
           size: 20,
         ),
       ),
-      title: Text(schedule.name,
-          style: TextStyle(
-            fontSize: 15,
-            fontWeight: isActive ? FontWeight.w700 : FontWeight.w500,
-            color: AppColors.textPrimary,
-          )),
-      subtitle: Text(subtitle,
-          style: const TextStyle(fontSize: 12, color: AppColors.textSecondary)),
+      title: Text(
+        schedule.name,
+        style: TextStyle(
+          fontSize: 15,
+          fontWeight: isActive ? FontWeight.w700 : FontWeight.w500,
+          color: AppColors.textPrimary,
+        ),
+      ),
+      subtitle: Text(
+        subtitle,
+        style: const TextStyle(fontSize: 12, color: AppColors.textSecondary),
+      ),
       trailing: Row(
         mainAxisSize: MainAxisSize.min,
         children: [

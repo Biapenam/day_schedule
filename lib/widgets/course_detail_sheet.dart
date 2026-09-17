@@ -1,4 +1,4 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import '../models/course.dart';
 import '../models/schedule.dart';
@@ -34,8 +34,8 @@ class _CourseDetailSheetState extends State<CourseDetailSheet> {
   String _getStartTime(int section) =>
       Schedule.sectionStartTimeAt(widget.sectionStartTimes, section);
 
-  String _getEndTime(int section) => Schedule.calcEndTime(
-      _getStartTime(section), widget.sectionDuration);
+  String _getEndTime(int section) =>
+      Schedule.calcEndTime(_getStartTime(section), widget.sectionDuration);
 
   @override
   Widget build(BuildContext context) {
@@ -61,8 +61,9 @@ class _CourseDetailSheetState extends State<CourseDetailSheet> {
               width: 40,
               height: 4,
               decoration: BoxDecoration(
-                  color: Colors.grey[300],
-                  borderRadius: BorderRadius.circular(2)),
+                color: Colors.grey[300],
+                borderRadius: BorderRadius.circular(2),
+              ),
             ),
           ),
 
@@ -79,9 +80,10 @@ class _CourseDetailSheetState extends State<CourseDetailSheet> {
               borderRadius: BorderRadius.circular(20),
               boxShadow: [
                 BoxShadow(
-                    color: color.withValues(alpha: 0.35),
-                    blurRadius: 20,
-                    offset: const Offset(0, 6)),
+                  color: color.withValues(alpha: 0.35),
+                  blurRadius: 20,
+                  offset: const Offset(0, 6),
+                ),
               ],
             ),
             child: Row(
@@ -90,21 +92,31 @@ class _CourseDetailSheetState extends State<CourseDetailSheet> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(course.name,
-                          style: const TextStyle(
-                              color: Colors.white,
-                              fontSize: 22,
-                              fontWeight: FontWeight.w800)),
+                      Text(
+                        course.name,
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 22,
+                          fontWeight: FontWeight.w800,
+                        ),
+                      ),
                       if (course.teacher.isNotEmpty) ...[
                         const SizedBox(height: 6),
                         Row(
                           children: [
-                            const Icon(Icons.person_rounded,
-                                color: Colors.white70, size: 15),
+                            const Icon(
+                              Icons.person_rounded,
+                              color: Colors.white70,
+                              size: 15,
+                            ),
                             const SizedBox(width: 4),
-                            Text(course.teacher,
-                                style: const TextStyle(
-                                    color: Colors.white70, fontSize: 14)),
+                            Text(
+                              course.teacher,
+                              style: const TextStyle(
+                                color: Colors.white70,
+                                fontSize: 14,
+                              ),
+                            ),
                           ],
                         ),
                       ],
@@ -115,68 +127,85 @@ class _CourseDetailSheetState extends State<CourseDetailSheet> {
                   width: 56,
                   height: 56,
                   decoration: BoxDecoration(
-                      color: Colors.white.withValues(alpha: 0.2),
-                      shape: BoxShape.circle),
-                  child: const Icon(Icons.book_rounded,
-                      color: Colors.white, size: 28),
+                    color: Colors.white.withValues(alpha: 0.2),
+                    shape: BoxShape.circle,
+                  ),
+                  child: const Icon(
+                    Icons.book_rounded,
+                    color: Colors.white,
+                    size: 28,
+                  ),
                 ),
               ],
             ),
           ).animate().scale(
-              begin: const Offset(0.9, 0.9),
-              duration: 350.ms,
-              curve: Curves.easeOutBack),
+            begin: const Offset(0.9, 0.9),
+            duration: 350.ms,
+            curve: Curves.easeOutBack,
+          ),
 
           // 详情信息
           Padding(
             padding: const EdgeInsets.fromLTRB(20, 16, 20, 8),
-            child: Column(
-              children: [
-                _InfoRow(
-                    icon: Icons.access_time_rounded,
-                    color: color,
-                    label: '上课时间',
-                    value: '${dayNames[course.dayOfWeek]}  $sections'),
-                const SizedBox(height: 12),
-                if (course.location.isNotEmpty) ...[
-                  _InfoRow(
-                      icon: Icons.location_on_rounded,
-                      color: color,
-                      label: '上课地点',
-                      value: course.location),
-                  const SizedBox(height: 12),
-                ],
-                _InfoRow(
-                    icon: Icons.calendar_month_rounded,
-                    color: color,
-                    label: '上课周次',
-                    value: weeksText),
-              ],
-            )
-                .animate()
-                .fadeIn(delay: 150.ms, duration: 350.ms)
-                .slideY(begin: 0.15),
+            child:
+                Column(
+                      children: [
+                        _InfoRow(
+                          icon: Icons.access_time_rounded,
+                          color: color,
+                          label: '上课时间',
+                          value: '${dayNames[course.dayOfWeek]}  $sections',
+                        ),
+                        const SizedBox(height: 12),
+                        if (course.location.isNotEmpty) ...[
+                          _InfoRow(
+                            icon: Icons.location_on_rounded,
+                            color: color,
+                            label: '上课地点',
+                            value: course.location,
+                          ),
+                          const SizedBox(height: 12),
+                        ],
+                        _InfoRow(
+                          icon: Icons.calendar_month_rounded,
+                          color: color,
+                          label: '上课周次',
+                          value: weeksText,
+                        ),
+                      ],
+                    )
+                    .animate()
+                    .fadeIn(delay: 150.ms, duration: 350.ms)
+                    .slideY(begin: 0.15),
           ),
 
           // 操作按钮
           Padding(
             padding: EdgeInsets.fromLTRB(
-                20, 8, 20, MediaQuery.of(context).padding.bottom + 16),
+              20,
+              8,
+              20,
+              MediaQuery.of(context).padding.bottom + 16,
+            ),
             child: Row(
               children: [
                 Expanded(
-                    child: _ActionButton(
-                        label: '编辑',
-                        icon: Icons.edit_rounded,
-                        color: color,
-                        onTap: () => _editCourse(context))),
+                  child: _ActionButton(
+                    label: '编辑',
+                    icon: Icons.edit_rounded,
+                    color: color,
+                    onTap: () => _editCourse(context),
+                  ),
+                ),
                 const SizedBox(width: 12),
                 Expanded(
-                    child: _ActionButton(
-                        label: '删除',
-                        icon: Icons.delete_rounded,
-                        color: AppColors.secondary,
-                        onTap: () => _deleteCourse(context))),
+                  child: _ActionButton(
+                    label: '删除',
+                    icon: Icons.delete_rounded,
+                    color: AppColors.secondary,
+                    onTap: () => _deleteCourse(context),
+                  ),
+                ),
               ],
             ).animate().fadeIn(delay: 250.ms, duration: 350.ms),
           ),
@@ -212,12 +241,14 @@ class _CourseDetailSheetState extends State<CourseDetailSheet> {
         content: Text('确定要删除「${widget.course.name}」吗？'),
         actions: [
           TextButton(
-              onPressed: () => Navigator.pop(context, false),
-              child: const Text('取消')),
+            onPressed: () => Navigator.pop(context, false),
+            child: const Text('取消'),
+          ),
           TextButton(
-              onPressed: () => Navigator.pop(context, true),
-              style: TextButton.styleFrom(foregroundColor: Colors.red),
-              child: const Text('删除')),
+            onPressed: () => Navigator.pop(context, true),
+            style: TextButton.styleFrom(foregroundColor: Colors.red),
+            child: const Text('删除'),
+          ),
         ],
       ),
     );
@@ -238,9 +269,10 @@ class _CourseDetailSheetState extends State<CourseDetailSheet> {
           editingCourse: widget.course,
         ),
         transitionsBuilder: (_, anim, _, child) => SlideTransition(
-          position: Tween<Offset>(begin: const Offset(0, 1), end: Offset.zero)
-              .animate(
-                  CurvedAnimation(parent: anim, curve: Curves.easeOutCubic)),
+          position: Tween<Offset>(
+            begin: const Offset(0, 1),
+            end: Offset.zero,
+          ).animate(CurvedAnimation(parent: anim, curve: Curves.easeOutCubic)),
           child: child,
         ),
         transitionDuration: 400.ms,
@@ -256,11 +288,12 @@ class _InfoRow extends StatelessWidget {
   final String label;
   final String value;
 
-  const _InfoRow(
-      {required this.icon,
-      required this.color,
-      required this.label,
-      required this.value});
+  const _InfoRow({
+    required this.icon,
+    required this.color,
+    required this.label,
+    required this.value,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -271,8 +304,9 @@ class _InfoRow extends StatelessWidget {
           width: 36,
           height: 36,
           decoration: BoxDecoration(
-              color: color.withValues(alpha: 0.12),
-              borderRadius: BorderRadius.circular(10)),
+            color: color.withValues(alpha: 0.12),
+            borderRadius: BorderRadius.circular(10),
+          ),
           child: Icon(icon, color: color, size: 18),
         ),
         const SizedBox(width: 12),
@@ -280,17 +314,23 @@ class _InfoRow extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(label,
-                  style: const TextStyle(
-                      fontSize: 11,
-                      color: Color(0xFFAAAAAA),
-                      fontWeight: FontWeight.w500)),
+              Text(
+                label,
+                style: const TextStyle(
+                  fontSize: 11,
+                  color: Color(0xFFAAAAAA),
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
               const SizedBox(height: 3),
-              Text(value,
-                  style: const TextStyle(
-                      fontSize: 14,
-                      color: AppColors.textPrimary,
-                      fontWeight: FontWeight.w600)),
+              Text(
+                value,
+                style: const TextStyle(
+                  fontSize: 14,
+                  color: AppColors.textPrimary,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
             ],
           ),
         ),
@@ -305,11 +345,12 @@ class _ActionButton extends StatelessWidget {
   final Color color;
   final VoidCallback onTap;
 
-  const _ActionButton(
-      {required this.label,
-      required this.icon,
-      required this.color,
-      required this.onTap});
+  const _ActionButton({
+    required this.label,
+    required this.icon,
+    required this.color,
+    required this.onTap,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -327,9 +368,14 @@ class _ActionButton extends StatelessWidget {
           children: [
             Icon(icon, color: color, size: 18),
             const SizedBox(width: 6),
-            Text(label,
-                style: TextStyle(
-                    color: color, fontSize: 14, fontWeight: FontWeight.w700)),
+            Text(
+              label,
+              style: TextStyle(
+                color: color,
+                fontSize: 14,
+                fontWeight: FontWeight.w700,
+              ),
+            ),
           ],
         ),
       ),

@@ -1,48 +1,48 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:open_schedule/models/course.dart';
-import 'package:open_schedule/models/schedule.dart';
-import 'package:open_schedule/services/course_service.dart';
-import 'package:open_schedule/services/import_export_service.dart';
-import 'package:open_schedule/widgets/import_export_sheet.dart';
+import 'package:day_schedule/models/course.dart';
+import 'package:day_schedule/models/schedule.dart';
+import 'package:day_schedule/services/course_service.dart';
+import 'package:day_schedule/services/import_export_service.dart';
+import 'package:day_schedule/widgets/import_export_sheet.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 void main() {
   Schedule buildSchedule() => Schedule(
-        id: 's-1',
-        name: '2026春季学期',
-        semesterStart: DateTime(2026, 2, 23),
-        totalWeeks: 20,
-        dailySections: 12,
-        sectionDuration: 45,
-        // 远程 Schedule 模型会把节次时间补全到 dailySections 个
-        sectionStartTimes: List<String>.from(defaultSectionStartTimes),
-      );
+    id: 's-1',
+    name: '2026春季学期',
+    semesterStart: DateTime(2026, 2, 23),
+    totalWeeks: 20,
+    dailySections: 12,
+    sectionDuration: 45,
+    // 远程 Schedule 模型会把节次时间补全到 dailySections 个
+    sectionStartTimes: List<String>.from(defaultSectionStartTimes),
+  );
 
   List<Course> buildCourses() => [
-        Course(
-          id: 'c-1',
-          name: '高等数学',
-          teacher: '张老师',
-          location: 'A-101',
-          colorValue: 0xFF6C63FF,
-          weeks: [1, 2, 3, 4, 5, 6],
-          dayOfWeek: 1,
-          startSection: 1,
-          endSection: 2,
-        ),
-        Course(
-          id: 'c-2',
-          name: '大学英语',
-          teacher: '',
-          location: '',
-          colorValue: 0xFFFF6584,
-          weeks: [1, 3, 5],
-          dayOfWeek: 3,
-          startSection: 3,
-          endSection: 4,
-        ),
-      ];
+    Course(
+      id: 'c-1',
+      name: '高等数学',
+      teacher: '张老师',
+      location: 'A-101',
+      colorValue: 0xFF6C63FF,
+      weeks: [1, 2, 3, 4, 5, 6],
+      dayOfWeek: 1,
+      startSection: 1,
+      endSection: 2,
+    ),
+    Course(
+      id: 'c-2',
+      name: '大学英语',
+      teacher: '',
+      location: '',
+      colorValue: 0xFFFF6584,
+      weeks: [1, 3, 5],
+      dayOfWeek: 3,
+      startSection: 3,
+      endSection: 4,
+    ),
+  ];
 
   test('encode -> decode 往返数据一致', () {
     final code = ImportExportService.encode(buildSchedule(), buildCourses());
@@ -90,7 +90,9 @@ void main() {
 
   test('缺少前缀时抛出 FormatException', () {
     expect(
-        () => ImportExportService.decode('hello world'), throwsFormatException);
+      () => ImportExportService.decode('hello world'),
+      throwsFormatException,
+    );
     expect(() => ImportExportService.decode(''), throwsFormatException);
   });
 
@@ -104,7 +106,9 @@ void main() {
   // ── 导入流程集成测试 ─────────────────────────────────────
 
   Future<void> openImportSheet(
-      WidgetTester tester, CourseService service) async {
+    WidgetTester tester,
+    CourseService service,
+  ) async {
     await tester.pumpWidget(
       MaterialApp(
         home: Scaffold(
@@ -211,8 +215,9 @@ void main() {
   testWidgets('导入弹窗：键盘弹出时口令输入框不被遮挡', (WidgetTester tester) async {
     // 模拟输入法弹出（底部 300 逻辑像素；viewInsets 以物理像素为单位，
     // MediaQuery 会按 devicePixelRatio 换算成逻辑像素）
-    tester.view.viewInsets =
-        FakeViewPadding(bottom: 300 * tester.view.devicePixelRatio);
+    tester.view.viewInsets = FakeViewPadding(
+      bottom: 300 * tester.view.devicePixelRatio,
+    );
     addTearDown(tester.view.reset);
 
     SharedPreferences.setMockInitialValues({});
@@ -233,7 +238,8 @@ void main() {
                   constraints: const BoxConstraints(maxWidth: 640),
                   builder: (sheetContext) => Padding(
                     padding: EdgeInsets.only(
-                        bottom: MediaQuery.of(sheetContext).viewInsets.bottom),
+                      bottom: MediaQuery.of(sheetContext).viewInsets.bottom,
+                    ),
                     child: ImportSheet(service: service),
                   ),
                 ),
@@ -254,9 +260,15 @@ void main() {
     final rect = tester.getRect(find.byType(TextField));
     // 默认测试窗口 800x600，键盘 300 → 键盘上方可视区域为 0..300
     const visibleBottom = 600.0 - 300.0;
-    expect(rect.top, greaterThanOrEqualTo(0),
-        reason: '输入框顶部不应超出屏幕顶部，实际 top=${rect.top}');
-    expect(rect.bottom, lessThanOrEqualTo(visibleBottom + 1),
-        reason: '输入框底部不应被键盘遮挡，实际 bottom=${rect.bottom}');
+    expect(
+      rect.top,
+      greaterThanOrEqualTo(0),
+      reason: '输入框顶部不应超出屏幕顶部，实际 top=${rect.top}',
+    );
+    expect(
+      rect.bottom,
+      lessThanOrEqualTo(visibleBottom + 1),
+      reason: '输入框底部不应被键盘遮挡，实际 bottom=${rect.bottom}',
+    );
   });
 }

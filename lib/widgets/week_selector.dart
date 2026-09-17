@@ -1,4 +1,4 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import '../utils/app_modal_sheet.dart';
 import '../utils/app_colors.dart';
 
@@ -25,8 +25,9 @@ class WeekSelector extends StatelessWidget {
           // 上一周
           _ArrowButton(
             icon: Icons.chevron_left_rounded,
-            onTap:
-                selectedWeek > 1 ? () => onWeekChanged(selectedWeek - 1) : null,
+            onTap: selectedWeek > 1
+                ? () => onWeekChanged(selectedWeek - 1)
+                : null,
           ),
           // 周次显示
           Expanded(
@@ -34,8 +35,10 @@ class WeekSelector extends StatelessWidget {
               onTap: () => _showWeekPicker(context),
               child: Container(
                 margin: const EdgeInsets.symmetric(horizontal: 8),
-                padding:
-                    const EdgeInsets.symmetric(vertical: 10, horizontal: 16),
+                padding: const EdgeInsets.symmetric(
+                  vertical: 10,
+                  horizontal: 16,
+                ),
                 decoration: BoxDecoration(
                   color: Colors.white,
                   borderRadius: BorderRadius.circular(14),
@@ -55,7 +58,9 @@ class WeekSelector extends StatelessWidget {
                       Container(
                         margin: const EdgeInsets.only(right: 8),
                         padding: const EdgeInsets.symmetric(
-                            horizontal: 6, vertical: 2),
+                          horizontal: 6,
+                          vertical: 2,
+                        ),
                         decoration: BoxDecoration(
                           color: AppColors.primary,
                           borderRadius: BorderRadius.circular(6),
@@ -86,8 +91,11 @@ class WeekSelector extends StatelessWidget {
                       ),
                     ),
                     const SizedBox(width: 8),
-                    const Icon(Icons.expand_more_rounded,
-                        size: 18, color: Color(0xFFAAAAAA)),
+                    const Icon(
+                      Icons.expand_more_rounded,
+                      size: 18,
+                      color: Color(0xFFAAAAAA),
+                    ),
                   ],
                 ),
               ),
@@ -136,7 +144,9 @@ class _ArrowButton extends StatelessWidget {
         width: 40,
         height: 40,
         decoration: BoxDecoration(
-          color: onTap != null ? Colors.white : Colors.white.withValues(alpha: 0.5),
+          color: onTap != null
+              ? Colors.white
+              : Colors.white.withValues(alpha: 0.5),
           borderRadius: BorderRadius.circular(12),
           boxShadow: onTap != null
               ? [
@@ -144,14 +154,13 @@ class _ArrowButton extends StatelessWidget {
                     color: AppColors.primary.withValues(alpha: 0.1),
                     blurRadius: 8,
                     offset: const Offset(0, 2),
-                  )
+                  ),
                 ]
               : [],
         ),
         child: Icon(
           icon,
-          color:
-              onTap != null ? AppColors.primary : const Color(0xFFCCCCDD),
+          color: onTap != null ? AppColors.primary : const Color(0xFFCCCCDD),
           size: 22,
         ),
       ),
@@ -220,8 +229,8 @@ class _WeekPickerSheet extends StatelessWidget {
                     color: isSelected
                         ? AppColors.primary
                         : isCurrent
-                            ? AppColors.primary.withValues(alpha: 0.1)
-                            : const Color(0xFFF5F5FF),
+                        ? AppColors.primary.withValues(alpha: 0.1)
+                        : const Color(0xFFF5F5FF),
                     borderRadius: BorderRadius.circular(10),
                   ),
                   child: Center(
@@ -233,8 +242,8 @@ class _WeekPickerSheet extends StatelessWidget {
                         color: isSelected
                             ? Colors.white
                             : isCurrent
-                                ? AppColors.primary
-                                : AppColors.textBody,
+                            ? AppColors.primary
+                            : AppColors.textBody,
                       ),
                     ),
                   ),

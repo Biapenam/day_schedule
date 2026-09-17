@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:open_schedule/app.dart';
-import 'package:open_schedule/models/course.dart';
-import 'package:open_schedule/screens/add_course_screen.dart';
-import 'package:open_schedule/screens/settings_screen.dart';
-import 'package:open_schedule/widgets/schedule_grid.dart';
+import 'package:day_schedule/app.dart';
+import 'package:day_schedule/models/course.dart';
+import 'package:day_schedule/screens/add_course_screen.dart';
+import 'package:day_schedule/screens/settings_screen.dart';
+import 'package:day_schedule/widgets/schedule_grid.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 void main() {
@@ -13,7 +13,7 @@ void main() {
   testWidgets('shows the schedule home screen', (WidgetTester tester) async {
     SharedPreferences.setMockInitialValues({});
 
-    await tester.pumpWidget(const ScheduleApp());
+    await tester.pumpWidget(const DayScheduleApp());
     await tester.pumpAndSettle();
 
     expect(find.text('我的课表'), findsOneWidget);
@@ -40,7 +40,7 @@ void main() {
       addTearDown(tester.view.resetDevicePixelRatio);
       SharedPreferences.setMockInitialValues({});
 
-      await tester.pumpWidget(const ScheduleApp());
+      await tester.pumpWidget(const DayScheduleApp());
       await tester.pumpAndSettle();
 
       expect(tester.takeException(), isNull);

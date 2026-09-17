@@ -24,20 +24,29 @@ class Schedule {
     int dailySections = 12,
     List<String>? sectionStartTimes,
     int sectionDuration = 45,
-  })  : totalWeeks = totalWeeks.clamp(minTotalWeeks, maxTotalWeeks).toInt(),
-        dailySections = dailySections.clamp(minDailySections, maxDailySections).toInt(),
-        sectionStartTimes = normalizeSectionStartTimes(
-            sectionStartTimes, dailySections.clamp(minDailySections, maxDailySections).toInt()),
-        sectionDuration =
-            sectionDuration.clamp(minSectionDuration, maxSectionDuration).toInt();
+  }) : totalWeeks = totalWeeks.clamp(minTotalWeeks, maxTotalWeeks).toInt(),
+       dailySections = dailySections
+           .clamp(minDailySections, maxDailySections)
+           .toInt(),
+       sectionStartTimes = normalizeSectionStartTimes(
+         sectionStartTimes,
+         dailySections.clamp(minDailySections, maxDailySections).toInt(),
+       ),
+       sectionDuration = sectionDuration
+           .clamp(minSectionDuration, maxSectionDuration)
+           .toInt();
 
   static List<String> normalizeSectionStartTimes(
-      List<String>? raw, int dailySections) {
+    List<String>? raw,
+    int dailySections,
+  ) {
     final defaults = List<String>.from(defaultSectionStartTimes);
     final values = raw ?? <String>[];
     return List<String>.generate(dailySections, (index) {
       final value = index < values.length ? values[index] : null;
-      return _isValidTime(value) ? value! : (index < defaults.length ? defaults[index] : '08:00');
+      return _isValidTime(value)
+          ? value!
+          : (index < defaults.length ? defaults[index] : '08:00');
     });
   }
 
@@ -94,8 +103,9 @@ class Schedule {
     return Schedule(
       id: id ?? this.id,
       name: name ?? this.name,
-      semesterStart:
-          clearSemesterStart ? null : (semesterStart ?? this.semesterStart),
+      semesterStart: clearSemesterStart
+          ? null
+          : (semesterStart ?? this.semesterStart),
       totalWeeks: totalWeeks ?? this.totalWeeks,
       dailySections: dailySections ?? this.dailySections,
       sectionStartTimes: sectionStartTimes ?? List.from(this.sectionStartTimes),
@@ -104,14 +114,14 @@ class Schedule {
   }
 
   Map<String, dynamic> toJson() => {
-        'id': id,
-        'name': name,
-        'semesterStart': semesterStart?.toIso8601String(),
-        'totalWeeks': totalWeeks,
-        'dailySections': dailySections,
-        'sectionStartTimes': sectionStartTimes,
-        'sectionDuration': sectionDuration,
-      };
+    'id': id,
+    'name': name,
+    'semesterStart': semesterStart?.toIso8601String(),
+    'totalWeeks': totalWeeks,
+    'dailySections': dailySections,
+    'sectionStartTimes': sectionStartTimes,
+    'sectionDuration': sectionDuration,
+  };
 
   factory Schedule.fromJson(Map<String, dynamic> json) {
     int readInt(String key, int fallback) {
@@ -146,7 +156,6 @@ class Schedule {
       sectionDuration: readInt('sectionDuration', 45),
     );
   }
-
 }
 
 // 默认节次开始时间（12节）
@@ -164,4 +173,3 @@ const List<String> defaultSectionStartTimes = [
   '19:25',
   '20:20',
 ];
-

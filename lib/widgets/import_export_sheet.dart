@@ -1,4 +1,4 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import '../models/course.dart';
@@ -37,7 +37,11 @@ class ExportSheet extends StatelessWidget {
     final display = _grouped(code);
     return Container(
       padding: EdgeInsets.fromLTRB(
-          20, 12, 20, MediaQuery.of(context).padding.bottom + 20),
+        20,
+        12,
+        20,
+        MediaQuery.of(context).padding.bottom + 20,
+      ),
       child: SingleChildScrollView(
         child: Column(
           mainAxisSize: MainAxisSize.min,
@@ -58,18 +62,24 @@ class ExportSheet extends StatelessWidget {
               children: [
                 Icon(Icons.upload_rounded, color: AppColors.primary, size: 20),
                 SizedBox(width: 8),
-                Text('导出课表口令',
-                    style: TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.w700,
-                        color: AppColors.textPrimary)),
+                Text(
+                  '导出课表口令',
+                  style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w700,
+                    color: AppColors.textPrimary,
+                  ),
+                ),
               ],
             ),
             const SizedBox(height: 12),
             Text(
               '口令包含「$scheduleName」（$courseCount 门课程）。在另一台设备打开「设置 → 课表管理 → 从口令导入」并粘贴即可恢复。',
               style: const TextStyle(
-                  fontSize: 13, color: AppColors.textSecondary, height: 1.5),
+                fontSize: 13,
+                color: AppColors.textSecondary,
+                height: 1.5,
+              ),
             ),
             const SizedBox(height: 16),
             // 口令卡片
@@ -79,8 +89,9 @@ class ExportSheet extends StatelessWidget {
               decoration: BoxDecoration(
                 color: AppColors.inputFill,
                 borderRadius: BorderRadius.circular(14),
-                border:
-                    Border.all(color: AppColors.primary.withValues(alpha: 0.2)),
+                border: Border.all(
+                  color: AppColors.primary.withValues(alpha: 0.2),
+                ),
               ),
               child: SingleChildScrollView(
                 scrollDirection: Axis.horizontal,
@@ -108,16 +119,20 @@ class ExportSheet extends StatelessWidget {
                       backgroundColor: AppColors.primary,
                       behavior: SnackBarBehavior.floating,
                       shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12)),
+                        borderRadius: BorderRadius.circular(12),
+                      ),
                     ),
                   );
                 },
                 icon: const Icon(Icons.copy_rounded, size: 18),
-                label: const Text('复制口令',
-                    style: TextStyle(fontWeight: FontWeight.w700)),
+                label: const Text(
+                  '复制口令',
+                  style: TextStyle(fontWeight: FontWeight.w700),
+                ),
                 style: FilledButton.styleFrom(
                   shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(14)),
+                    borderRadius: BorderRadius.circular(14),
+                  ),
                 ),
               ),
             ),
@@ -187,8 +202,9 @@ class _ImportSheetState extends State<ImportSheet> {
     if (data == null) return;
 
     final schedules = await widget.service.loadSchedules();
-    final sameName =
-        schedules.where((s) => s.name == data.schedule.name).toList();
+    final sameName = schedules
+        .where((s) => s.name == data.schedule.name)
+        .toList();
 
     if (sameName.isNotEmpty) {
       final action = await _askConflict(data.schedule.name);
@@ -234,9 +250,9 @@ class _ImportSheetState extends State<ImportSheet> {
     } catch (e) {
       debugPrint('import failed: $e');
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('导入失败，请重试')),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('导入失败，请重试')));
     } finally {
       if (mounted) setState(() => _busy = false);
     }
@@ -272,7 +288,11 @@ class _ImportSheetState extends State<ImportSheet> {
     final parsed = _parsed;
     return Container(
       padding: EdgeInsets.fromLTRB(
-          20, 12, 20, MediaQuery.of(context).padding.bottom + 20),
+        20,
+        12,
+        20,
+        MediaQuery.of(context).padding.bottom + 20,
+      ),
       child: SingleChildScrollView(
         keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
         child: Column(
@@ -292,19 +312,27 @@ class _ImportSheetState extends State<ImportSheet> {
             const SizedBox(height: 16),
             const Row(
               children: [
-                Icon(Icons.download_rounded,
-                    color: AppColors.primary, size: 20),
+                Icon(
+                  Icons.download_rounded,
+                  color: AppColors.primary,
+                  size: 20,
+                ),
                 SizedBox(width: 8),
-                Text('从口令导入课表',
-                    style: TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.w700,
-                        color: AppColors.textPrimary)),
+                Text(
+                  '从口令导入课表',
+                  style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w700,
+                    color: AppColors.textPrimary,
+                  ),
+                ),
               ],
             ),
             const SizedBox(height: 12),
-            const Text('粘贴另一台设备导出的口令，即可恢复课表。',
-                style: TextStyle(fontSize: 13, color: AppColors.textSecondary)),
+            const Text(
+              '粘贴另一台设备导出的口令，即可恢复课表。',
+              style: TextStyle(fontSize: 13, color: AppColors.textSecondary),
+            ),
             const SizedBox(height: 12),
             TextField(
               controller: _ctrl,
@@ -313,8 +341,7 @@ class _ImportSheetState extends State<ImportSheet> {
               style: const TextStyle(fontSize: 13, height: 1.5),
               decoration: const InputDecoration(
                 hintText: '例如：OS1:xxxxx...（长按可粘贴）',
-                hintStyle:
-                    TextStyle(fontSize: 13, color: Color(0xFFAAAAAA)),
+                hintStyle: TextStyle(fontSize: 13, color: Color(0xFFAAAAAA)),
               ),
               onSubmitted: (_) => _parse(),
             ),
@@ -324,12 +351,15 @@ class _ImportSheetState extends State<ImportSheet> {
               child: FilledButton.icon(
                 onPressed: _parse,
                 icon: const Icon(Icons.search_rounded, size: 18),
-                label: const Text('解析口令',
-                    style: TextStyle(fontWeight: FontWeight.w700)),
+                label: const Text(
+                  '解析口令',
+                  style: TextStyle(fontWeight: FontWeight.w700),
+                ),
                 style: FilledButton.styleFrom(
                   padding: const EdgeInsets.symmetric(vertical: 12),
                   shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(14)),
+                    borderRadius: BorderRadius.circular(14),
+                  ),
                 ),
               ),
             ),
@@ -344,15 +374,21 @@ class _ImportSheetState extends State<ImportSheet> {
                 ),
                 child: Row(
                   children: [
-                    const Icon(Icons.error_outline_rounded,
-                        color: AppColors.secondary, size: 18),
+                    const Icon(
+                      Icons.error_outline_rounded,
+                      color: AppColors.secondary,
+                      size: 18,
+                    ),
                     const SizedBox(width: 8),
                     Expanded(
-                      child: Text(_error!,
-                          style: const TextStyle(
-                              fontSize: 12,
-                              color: AppColors.secondary,
-                              fontWeight: FontWeight.w600)),
+                      child: Text(
+                        _error!,
+                        style: const TextStyle(
+                          fontSize: 12,
+                          color: AppColors.secondary,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
                     ),
                   ],
                 ),
@@ -371,14 +407,22 @@ class _ImportSheetState extends State<ImportSheet> {
                           width: 16,
                           height: 16,
                           child: CircularProgressIndicator(
-                              strokeWidth: 2, color: Colors.white))
-                      : const Icon(Icons.check_circle_outline_rounded,
-                          size: 18),
-                  label: Text(_busy ? '正在导入…' : '导入 ${parsed.schedule.name}',
-                      style: const TextStyle(fontWeight: FontWeight.w700)),
+                            strokeWidth: 2,
+                            color: Colors.white,
+                          ),
+                        )
+                      : const Icon(
+                          Icons.check_circle_outline_rounded,
+                          size: 18,
+                        ),
+                  label: Text(
+                    _busy ? '正在导入…' : '导入 ${parsed.schedule.name}',
+                    style: const TextStyle(fontWeight: FontWeight.w700),
+                  ),
                   style: FilledButton.styleFrom(
                     shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(14)),
+                      borderRadius: BorderRadius.circular(14),
+                    ),
                   ),
                 ),
               ),
@@ -405,22 +449,32 @@ class _ImportSheetState extends State<ImportSheet> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text('即将导入',
-              style: TextStyle(
-                  fontSize: 11,
-                  fontWeight: FontWeight.w700,
-                  color: AppColors.primary)),
+          const Text(
+            '即将导入',
+            style: TextStyle(
+              fontSize: 11,
+              fontWeight: FontWeight.w700,
+              color: AppColors.primary,
+            ),
+          ),
           const SizedBox(height: 8),
-          Text(s.name,
-              style: const TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.w700,
-                  color: AppColors.textPrimary)),
+          Text(
+            s.name,
+            style: const TextStyle(
+              fontSize: 16,
+              fontWeight: FontWeight.w700,
+              color: AppColors.textPrimary,
+            ),
+          ),
           const SizedBox(height: 6),
           Text(
-              '${data.courses.length} 门课程 · 共 ${s.totalWeeks} 周 · '
-              '每天 ${s.dailySections} 节 · 学期开始 $startText',
-              style: const TextStyle(fontSize: 12, color: AppColors.textSecondary)),
+            '${data.courses.length} 门课程 · 共 ${s.totalWeeks} 周 · '
+            '每天 ${s.dailySections} 节 · 学期开始 $startText',
+            style: const TextStyle(
+              fontSize: 12,
+              color: AppColors.textSecondary,
+            ),
+          ),
         ],
       ),
     );

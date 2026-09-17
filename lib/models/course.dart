@@ -20,11 +20,12 @@ class Course {
     required int dayOfWeek,
     required int startSection,
     required int endSection,
-  })  : weeks = normalizeWeeks(weeks),
-        dayOfWeek = dayOfWeek.clamp(1, 7).toInt(),
-        startSection = startSection.clamp(1, maxSection).toInt(),
-        endSection = endSection.clamp(
-            startSection.clamp(1, maxSection), maxSection).toInt();
+  }) : weeks = normalizeWeeks(weeks),
+       dayOfWeek = dayOfWeek.clamp(1, 7).toInt(),
+       startSection = startSection.clamp(1, maxSection).toInt(),
+       endSection = endSection
+           .clamp(startSection.clamp(1, maxSection), maxSection)
+           .toInt();
 
   static List<int> normalizeWeeks(Iterable<int> weeks) =>
       weeks.where((week) => week > 0).toSet().toList()..sort();
@@ -84,16 +85,16 @@ class Course {
   }
 
   Map<String, dynamic> toJson() => {
-        'id': id,
-        'name': name,
-        'teacher': teacher,
-        'location': location,
-        'colorValue': colorValue,
-        'weeks': weeks,
-        'dayOfWeek': dayOfWeek,
-        'startSection': startSection,
-        'endSection': endSection,
-      };
+    'id': id,
+    'name': name,
+    'teacher': teacher,
+    'location': location,
+    'colorValue': colorValue,
+    'weeks': weeks,
+    'dayOfWeek': dayOfWeek,
+    'startSection': startSection,
+    'endSection': endSection,
+  };
 
   factory Course.fromJson(Map<String, dynamic> json) {
     int readInt(String key, int fallback) {
@@ -109,15 +110,20 @@ class Course {
     final rawWeeks = json['weeks'];
     final weeks = rawWeeks is List
         ? rawWeeks
-            .map((w) => w is int ? w : int.tryParse(w.toString()))
-            .whereType<int>()
-            .where((w) => w > 0)
-            .toList()
+              .map((w) => w is int ? w : int.tryParse(w.toString()))
+              .whereType<int>()
+              .where((w) => w > 0)
+              .toList()
         : <int>[];
 
-    final startSection = readInt('startSection', 1).clamp(1, maxSection).toInt();
-    final endSection =
-        readInt('endSection', startSection).clamp(startSection, maxSection).toInt();
+    final startSection = readInt(
+      'startSection',
+      1,
+    ).clamp(1, maxSection).toInt();
+    final endSection = readInt(
+      'endSection',
+      startSection,
+    ).clamp(startSection, maxSection).toInt();
 
     return Course(
       id: readString('id'),
@@ -131,7 +137,6 @@ class Course {
       endSection: endSection,
     );
   }
-
 }
 
 // 预设课程颜色
@@ -149,4 +154,3 @@ const List<int> courseColors = [
 ];
 
 const List<String> dayNames = ['', '周一', '周二', '周三', '周四', '周五', '周六', '周日'];
-

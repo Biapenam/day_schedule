@@ -1,9 +1,9 @@
 import 'dart:convert';
 
 import 'package:flutter_test/flutter_test.dart';
-import 'package:open_schedule/models/course.dart';
-import 'package:open_schedule/models/schedule.dart';
-import 'package:open_schedule/services/course_service.dart';
+import 'package:day_schedule/models/course.dart';
+import 'package:day_schedule/models/schedule.dart';
+import 'package:day_schedule/services/course_service.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 void main() {
@@ -64,6 +64,25 @@ void main() {
       expect((await service.loadCoursesFor(s1.id)).length, 1);
       expect((await service.loadCoursesFor(s2.id)).first.name, '英语');
     });
+
+    test('主课程数据损坏时从最近一次备份恢复', () async {
+      final service = await createService();
+      final scheduleId = await service.getActiveScheduleId();
+      expect(scheduleId, isNotNull);
+
+      await service.saveCoursesFor(scheduleId!, [buildCourse()]);
+      await service.saveCoursesFor(scheduleId, [
+        buildCourse(),
+        buildCourse(id: 'c-2', name: '英语'),
+      ]);
+
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setString('courses_$scheduleId', '{{{ invalid');
+
+      final recovered = await service.loadCoursesFor(scheduleId);
+      expect(recovered.map((course) => course.id), ['c-1']);
+      expect(prefs.getString('courses_$scheduleId'), isNot('{{{ invalid'));
+    });
   });
 
   group('多课表管理', () {
@@ -114,6 +133,20 @@ void main() {
       final active = await service.getActiveSchedule();
       final schedules = await service.loadSchedules();
       expect(active!.id, schedules.first.id);
+    });
+
+    test('主课表数据损坏时从最近一次备份恢复', () async {
+      final service = await createService();
+      await service.createSchedule('课表A');
+      await service.createSchedule('课表B');
+
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setString('schedules', '{{{ invalid');
+
+      final recovered = await service.loadSchedules();
+      expect(recovered.length, 2);
+      expect(recovered.map((schedule) => schedule.name), ['我的课表', '课表A']);
+      expect(prefs.getString('schedules'), isNot('{{{ invalid'));
     });
   });
 
@@ -199,17 +232,33 @@ void main() {
 
     test('currentWeek：进行中 / 未开始 / 已结束', () {
       final service = CourseService();
-      final now = DateTime.now();
+      final semesterStart = DateTime(2026, 2, 23);
       // 学期开始于 7 天前 → 第 2 周
       expect(
-          service.currentWeek(now.subtract(const Duration(days: 7))), 2);
+        service.currentWeek(
+          semesterStart,
+          now: semesterStart.add(const Duration(days: 7)),
+        ),
+        2,
+      );
       // 学期开始于今天 → 第 1 周
-      expect(service.currentWeek(now), 1);
+      expect(service.currentWeek(semesterStart, now: semesterStart), 1);
       // 学期 7 天后才开始 → 负数（未开始）
-      expect(service.currentWeek(now.add(const Duration(days: 7))), lessThan(1));
+      expect(
+        service.currentWeek(
+          semesterStart,
+          now: semesterStart.subtract(const Duration(days: 1)),
+        ),
+        lessThan(1),
+      );
       // 学期 100 天前开始 → 第 15 周（100 ~/ 7 + 1）
       expect(
-          service.currentWeek(now.subtract(const Duration(days: 100))), 15);
+        service.currentWeek(
+          semesterStart,
+          now: semesterStart.add(const Duration(days: 100)),
+        ),
+        15,
+      );
     });
 
     test('loadShowNonCurrentWeekCourses 默认为 true，保存后可正确读取', () async {

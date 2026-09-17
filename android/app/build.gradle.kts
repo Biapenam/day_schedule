@@ -9,15 +9,28 @@ plugins {
 }
 
 // 读取签名配置（android/key.properties，已被 .gitignore 忽略）。
-// 文件不存在时回退到 debug 签名，保证 flutter run / 本地调试可用。
+// Debug 构建不需要正式签名；Release 构建禁止回退到 debug 签名。
 val keystoreProperties = Properties()
 val keystorePropertiesFile = rootProject.file("key.properties")
-if (keystorePropertiesFile.exists()) {
+val releaseSigningConfigured = keystorePropertiesFile.exists()
+if (releaseSigningConfigured) {
     keystoreProperties.load(FileInputStream(keystorePropertiesFile))
 }
 
+// 直接执行 assembleRelease / bundleRelease 等任务时，尽早给出明确错误，
+// 避免生成使用 debug 签名或无法用于升级的正式包。
+val releaseBuildRequested = gradle.startParameter.taskNames.any { taskName ->
+    taskName.substringAfterLast(':').contains("release", ignoreCase = true)
+}
+if (releaseBuildRequested && !releaseSigningConfigured) {
+    throw GradleException(
+        "Release build requires android/key.properties and a release keystore. " +
+            "Copy android/key.properties.example and configure your signing credentials."
+    )
+}
+
 android {
-    namespace = "com.biapenam.open_schedule"
+    namespace = "com.biapenam.day_schedule"
     compileSdk = flutter.compileSdkVersion
     ndkVersion = flutter.ndkVersion
 
@@ -31,7 +44,7 @@ android {
     }
 
     defaultConfig {
-        applicationId = "com.biapenam.open_schedule"
+        applicationId = "com.biapenam.day_schedule"
         minSdk = flutter.minSdkVersion
         targetSdk = flutter.targetSdkVersion
         versionCode = flutter.versionCode
@@ -39,8 +52,11 @@ android {
     }
 
     signingConfigs {
-        if (keystorePropertiesFile.exists()) {
-            create("release") {
+        // 始终声明 release 配置，但绝不使用 debug 配置作为回退。
+        // 缺少 key.properties 时，直接执行 release 任务会在上方失败；
+        // 聚合任务（如 assemble）也会因空的 release 配置而无法签名。
+        create("release") {
+            if (releaseSigningConfigured) {
                 keyAlias = keystoreProperties["keyAlias"] as String
                 keyPassword = keystoreProperties["keyPassword"] as String
                 storeFile = file(keystoreProperties["storeFile"] as String)
@@ -51,13 +67,7 @@ android {
 
     buildTypes {
         release {
-            signingConfig = if (keystorePropertiesFile.exists()) {
-                signingConfigs.getByName("release")
-            } else {
-                // 未配置 android/key.properties 时回退 debug 签名（仅用于本地调试，
-                // 正式发布前必须配置 release 签名）
-                signingConfigs.getByName("debug")
-            }
+            signingConfig = signingConfigs.getByName("release")
         }
     }
 }
