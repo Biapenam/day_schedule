@@ -6,7 +6,7 @@ import 'course_detail_sheet.dart';
 import 'dart:math' as math;
 import '../utils/app_colors.dart';
 
-const double _cellHeight = 58.0;
+const double _cellHeight = 68.0;
 const double _sectionLabelWidth = 44.0;
 
 class ScheduleGrid extends StatefulWidget {
@@ -199,17 +199,10 @@ class _ScheduleGridState extends State<ScheduleGrid> {
               margin: const EdgeInsets.symmetric(horizontal: 12),
               decoration: BoxDecoration(
                 color: Colors.white,
-                borderRadius: BorderRadius.circular(20),
-                boxShadow: [
-                  BoxShadow(
-                    color: AppColors.primary.withValues(alpha: 0.08),
-                    blurRadius: 20,
-                    offset: const Offset(0, 4),
-                  ),
-                ],
+                borderRadius: BorderRadius.circular(28),
               ),
               child: ClipRRect(
-                borderRadius: BorderRadius.circular(20),
+                borderRadius: BorderRadius.circular(28),
                 child: Column(
                   children: [
                     _buildHeader(todayWeekday, weekMonday, visibleDays),
@@ -236,72 +229,60 @@ class _ScheduleGridState extends State<ScheduleGrid> {
   // ── 标题行 ─────────────────────────────────────────────────
   Widget _buildHeader(int todayWeekday, DateTime weekMonday, int visibleDays) {
     const dayChars = ['', '一', '二', '三', '四', '五', '六', '日'];
-
+    final compact = MediaQuery.sizeOf(context).width < 600;
     return Container(
-      decoration: const BoxDecoration(
-        gradient: LinearGradient(
-          colors: [AppColors.primary, Color(0xFF9C8FFF)],
-          begin: Alignment.centerLeft,
-          end: Alignment.centerRight,
-        ),
-      ),
+      color: AppColors.surfaceContainer,
+      padding: EdgeInsets.symmetric(vertical: compact ? 6 : 12),
       child: Row(
         children: [
-          const SizedBox(width: _sectionLabelWidth),
-          for (int d = 1; d <= visibleDays; d++)
+          SizedBox(
+            width: _sectionLabelWidth,
+            child: Text(
+              '${weekMonday.month}月',
+              textAlign: TextAlign.center,
+              style: const TextStyle(
+                fontSize: 11,
+                color: AppColors.textSecondary,
+              ),
+            ),
+          ),
+          for (int day = 1; day <= visibleDays; day++)
             Expanded(
               child: Builder(
                 builder: (context) {
-                  final dayDate = weekMonday.add(Duration(days: d - 1));
-                  final isToday = widget.isCurrentWeek && d == todayWeekday;
-                  final isWeekend = d >= 6;
+                  final date = weekMonday.add(Duration(days: day - 1));
+                  final isToday = widget.isCurrentWeek && day == todayWeekday;
                   return Column(
                     children: [
-                      const SizedBox(height: 6),
                       Text(
-                        '周${dayChars[d]}',
-                        style: TextStyle(
-                          color: isToday
-                              ? Colors.white
-                              : isWeekend
-                              ? Colors.white54
-                              : Colors.white70,
+                        '周${dayChars[day]}',
+                        style: const TextStyle(
                           fontSize: 11,
-                          fontWeight: isToday
-                              ? FontWeight.w700
-                              : FontWeight.w500,
+                          color: AppColors.textSecondary,
                         ),
                       ),
-                      const SizedBox(height: 2),
-                      isToday
-                          ? Container(
-                              width: 22,
-                              height: 22,
-                              decoration: const BoxDecoration(
-                                color: Colors.white,
-                                shape: BoxShape.circle,
-                              ),
-                              child: Center(
-                                child: Text(
-                                  '${dayDate.day}',
-                                  style: const TextStyle(
-                                    color: AppColors.primary,
-                                    fontSize: 11,
-                                    fontWeight: FontWeight.w800,
-                                  ),
-                                ),
-                              ),
-                            )
-                          : Text(
-                              '${dayDate.day}',
-                              style: TextStyle(
-                                color: isWeekend
-                                    ? Colors.white38
-                                    : Colors.white60,
-                                fontSize: 11,
-                              ),
-                            ),
-                      const SizedBox(height: 6),
+                      SizedBox(height: compact ? 2 : 6),
+                      Container(
+                        width: compact ? 28 : 32,
+                        height: compact ? 28 : 32,
+                        decoration: BoxDecoration(
+                          color: isToday
+                              ? AppColors.primary
+                              : Colors.transparent,
+                          shape: BoxShape.circle,
+                        ),
+                        alignment: Alignment.center,
+                        child: Text(
+                          '${date.day}',
+                          style: TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.w600,
+                            color: isToday
+                                ? Colors.white
+                                : AppColors.textPrimary,
+                          ),
+                        ),
+                      ),
                     ],
                   );
                 },
@@ -343,32 +324,36 @@ class _ScheduleGridState extends State<ScheduleGrid> {
                       ),
                     ),
                   ),
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Text(
-                        '$section',
-                        style: TextStyle(
-                          fontSize: 10,
-                          fontWeight: FontWeight.w700,
-                          color: AppColors.primary.withValues(alpha: 0.6),
+                  child: FittedBox(
+                    fit: BoxFit.scaleDown,
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Text(
+                          '$section',
+                          style: TextStyle(
+                            fontSize: 10,
+                            fontWeight: FontWeight.w700,
+                            color: AppColors.primary.withValues(alpha: 0.6),
+                          ),
                         ),
-                      ),
-                      Text(
-                        _getStartTime(section),
-                        style: const TextStyle(
-                          fontSize: 8,
-                          color: AppColors.textSecondary,
+                        Text(
+                          _getStartTime(section),
+                          style: const TextStyle(
+                            fontSize: 8,
+                            color: AppColors.textSecondary,
+                          ),
                         ),
-                      ),
-                      Text(
-                        _getEndTime(section),
-                        style: const TextStyle(
-                          fontSize: 7,
-                          color: Color(0xFFBBBBCC),
+                        Text(
+                          _getEndTime(section),
+                          style: const TextStyle(
+                            fontSize: 7,
+                            color: AppColors.textSecondary,
+                          ),
                         ),
-                      ),
-                    ],
+                      ],
+                    ),
                   ),
                 );
               }),
@@ -418,7 +403,7 @@ class _ScheduleGridState extends State<ScheduleGrid> {
                       : Colors.transparent,
                   border: const Border(
                     bottom: BorderSide(color: AppColors.borderLight, width: 1),
-                    right: BorderSide(color: Color(0xFFF5F5FA), width: 0.5),
+                    right: BorderSide(color: AppColors.borderLight, width: 0.5),
                   ),
                 ),
               ),
@@ -488,347 +473,175 @@ class _CourseBlock extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final color = Color(course.colorValue);
+    final colors = ColorScheme.fromSeed(seedColor: Color(course.colorValue));
+    final foreground = isNonCurrentWeek
+        ? AppColors.textSecondary
+        : colors.onPrimaryContainer;
+    return Semantics(
+      button: true,
+      label:
+          '${course.name}，${course.location}，第${course.startSection}至${course.endSection}节${isNonCurrentWeek ? '，非本周' : ''}',
+      child: Material(
+        color: isNonCurrentWeek
+            ? AppColors.surfaceContainer
+            : colors.primaryContainer,
+        borderRadius: BorderRadius.circular(14),
+        clipBehavior: Clip.antiAlias,
+        child: InkWell(
+          onTap: onTap,
+          child: ListenableBuilder(
+            // Flutter Web may load a Chinese fallback font after the first
+            // layout. Re-measure when font metrics change, just as Text does.
+            listenable: PaintingBinding.instance.systemFonts,
+            builder: (context, _) => LayoutBuilder(
+              builder: (context, constraints) {
+                final compact = constraints.maxWidth < 65;
+                final padding = compact ? 5.0 : 9.0;
+                final textWidth = math.max(
+                  1.0,
+                  constraints.maxWidth - padding * 2,
+                );
+                final availableHeight = math.max(
+                  0.0,
+                  constraints.maxHeight - padding * 2 - 8,
+                );
+                final name =
+                    '${course.name}${isNonCurrentWeek ? ' (非本周)' : ''}';
+                final baseStyle = DefaultTextStyle.of(context).style;
+                final nameStyle = baseStyle.copyWith(
+                  fontSize: compact ? 11 : 13,
+                  fontWeight: FontWeight.w600,
+                  color: foreground,
+                  height: 1.3,
+                );
+                final infoStyle = baseStyle.copyWith(
+                  fontSize: compact ? 9 : 11,
+                  height: 1.3,
+                  color: foreground,
+                );
+                final weekStyle = infoStyle.copyWith(
+                  fontSize: compact ? 8 : 10,
+                );
+                final teacherStyle = infoStyle.copyWith(fontSize: 10);
+                final weekLabel =
+                    '[${Course.formatWeeksSummary(course.weeks)}]';
 
-    if (isNonCurrentWeek) {
-      Color textColor = color;
-      if (ThemeData.estimateBrightnessForColor(color) == Brightness.light) {
-        textColor = HSLColor.fromColor(color).withLightness(0.35).toColor();
-      }
+                // Measure actual wrapping, including the system text scale. Course
+                // names get the available height first; metadata uses what is left.
+                TextPainter measure(
+                  String text,
+                  TextStyle style, {
+                  int? maxLines,
+                }) => TextPainter(
+                  text: TextSpan(text: text, style: style),
+                  textDirection: Directionality.of(context),
+                  textScaler: MediaQuery.textScalerOf(context),
+                  maxLines: maxLines,
+                )..layout(maxWidth: textWidth);
 
-      return GestureDetector(
-        onTap: onTap,
-        child: Container(
-          decoration: BoxDecoration(
-            color: color.withValues(alpha: 0.12),
-            borderRadius: BorderRadius.circular(9),
-            border: Border.all(color: color.withValues(alpha: 0.38), width: 1),
-          ),
-          child: LayoutBuilder(
-            builder: (context, constraints) {
-              return _buildNonCurrentWeekContent(
-                constraints.maxWidth,
-                constraints.maxHeight,
-                textColor,
-              );
-            },
+                final namePainter = measure(name, nameStyle);
+                final weekPainter = measure(weekLabel, weekStyle, maxLines: 1);
+                final locationPainter = measure(
+                  course.location,
+                  infoStyle,
+                  maxLines: 1,
+                );
+                final teacherPainter = measure(
+                  course.teacher,
+                  teacherStyle,
+                  maxLines: 1,
+                );
+                final lines = namePainter.computeLineMetrics();
+                final firstLineHeight = lines.isEmpty
+                    ? 0.0
+                    : lines.first.height;
+                final showWeeks =
+                    isNonCurrentWeek &&
+                    availableHeight >= firstLineHeight + 3 + weekPainter.height;
+                final nameBudget =
+                    availableHeight - (showWeeks ? 3 + weekPainter.height : 0);
+                var nameLines = 0;
+                var nameHeight = 0.0;
+                for (final line in lines) {
+                  if (nameHeight + line.height > nameBudget) break;
+                  nameHeight += line.height;
+                  nameLines++;
+                }
+                nameLines = math.max(1, nameLines);
+                var remaining = nameBudget - nameHeight;
+                final nameFits = nameLines >= lines.length;
+                final showLocation =
+                    nameFits &&
+                    course.location.isNotEmpty &&
+                    remaining >= 5 + locationPainter.height;
+                if (showLocation) remaining -= 5 + locationPainter.height;
+                final showTeacher =
+                    nameFits &&
+                    course.teacher.isNotEmpty &&
+                    remaining >= 3 + teacherPainter.height;
+                namePainter.dispose();
+                weekPainter.dispose();
+                locationPainter.dispose();
+                teacherPainter.dispose();
+
+                return Padding(
+                  padding: EdgeInsets.all(padding),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Container(
+                        width: 18,
+                        height: 3,
+                        decoration: BoxDecoration(
+                          color: isNonCurrentWeek
+                              ? AppColors.textSecondary
+                              : colors.primary,
+                          borderRadius: BorderRadius.circular(2),
+                        ),
+                      ),
+                      const SizedBox(height: 5),
+                      Flexible(
+                        child: Text(
+                          name,
+                          maxLines: nameLines,
+                          overflow: TextOverflow.ellipsis,
+                          style: nameStyle,
+                        ),
+                      ),
+                      if (showWeeks) ...[
+                        const SizedBox(height: 3),
+                        Text(
+                          weekLabel,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: weekStyle,
+                        ),
+                      ],
+                      if (showLocation) ...[
+                        const SizedBox(height: 5),
+                        Text(
+                          course.location,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: infoStyle,
+                        ),
+                      ],
+                      if (showTeacher) ...[
+                        const SizedBox(height: 3),
+                        Text(
+                          course.teacher,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: teacherStyle,
+                        ),
+                      ],
+                    ],
+                  ),
+                );
+              },
+            ),
           ),
         ),
-      );
-    }
-
-    return GestureDetector(
-      onTap: onTap,
-      child: Container(
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-            colors: [color.withValues(alpha: 0.88), color],
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-          ),
-          borderRadius: BorderRadius.circular(9),
-        ),
-        // 内容：用 LayoutBuilder 获取实际列宽，动态调整字体
-        child: LayoutBuilder(
-          builder: (context, constraints) {
-            return _buildContent(constraints.maxWidth, constraints.maxHeight);
-          },
-        ),
-      ),
-    );
-  }
-
-  Widget _buildNonCurrentWeekContent(
-    double colWidth,
-    double height,
-    Color textColor,
-  ) {
-    final availH = height - 8;
-
-    final hasLocation = course.location.isNotEmpty;
-    final hasTeacher = course.teacher.isNotEmpty;
-
-    final nameFontBase = colWidth < 44
-        ? 10.0
-        : colWidth >= 150
-        ? 12.0
-        : 11.0;
-    final infoFontBase = colWidth < 44
-        ? 9.0
-        : colWidth >= 150
-        ? 11.0
-        : 10.0;
-    final nameLineH = nameFontBase * 1.3;
-    final infoLineH = infoFontBase * 1.3;
-    const gap = 2.0;
-
-    final weekSummary = Course.formatWeeksSummary(course.weeks);
-
-    // 预留周次标注高度
-    final reserveForWeek = infoLineH + gap;
-    final reserveForInfo = hasLocation ? (gap + infoLineH) : 0.0;
-    final nameAvailH = availH - reserveForWeek - reserveForInfo;
-    final nameLines = math.max(1, (nameAvailH / nameLineH).floor().clamp(1, 3));
-
-    final usedSoFarWithWeek = nameLineH * nameLines + gap + infoLineH;
-    final showLocation =
-        hasLocation && (availH - usedSoFarWithWeek) >= gap + infoLineH;
-
-    final usedWithLoc =
-        usedSoFarWithWeek + (showLocation ? gap + infoLineH : 0.0);
-    final showTeacher = hasTeacher && (availH - usedWithLoc) >= gap + infoLineH;
-
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(4, 4, 3, 4),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          // 课程名 + (非本周)
-          Text.rich(
-            TextSpan(
-              children: [
-                TextSpan(
-                  text: course.name,
-                  style: TextStyle(
-                    color: textColor.withValues(alpha: 0.95),
-                    fontSize: nameFontBase,
-                    fontWeight: FontWeight.w700,
-                    height: 1.25,
-                  ),
-                ),
-                TextSpan(
-                  text: ' (非本周)',
-                  style: TextStyle(
-                    color: textColor.withValues(alpha: 0.70),
-                    fontSize: math.max(8.0, nameFontBase - 2.5),
-                    fontWeight: FontWeight.w600,
-                    height: 1.25,
-                  ),
-                ),
-              ],
-            ),
-            maxLines: nameLines,
-            overflow: TextOverflow.ellipsis,
-          ),
-
-          // 具体是第几周的课程
-          const SizedBox(height: gap),
-          Text(
-            '[$weekSummary]',
-            style: TextStyle(
-              color: textColor.withValues(alpha: 0.75),
-              fontSize: math.max(7.5, infoFontBase - 1.5),
-              fontWeight: FontWeight.w600,
-              height: 1.2,
-            ),
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
-          ),
-
-          // 地点
-          if (showLocation) ...[
-            const SizedBox(height: gap),
-            Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Padding(
-                  padding: const EdgeInsets.only(top: 1),
-                  child: Icon(
-                    Icons.location_on_rounded,
-                    color: textColor.withValues(alpha: 0.65),
-                    size: infoFontBase,
-                  ),
-                ),
-                const SizedBox(width: 1),
-                Expanded(
-                  child: Text(
-                    course.location,
-                    style: TextStyle(
-                      color: textColor.withValues(alpha: 0.70),
-                      fontSize: infoFontBase,
-                      fontWeight: FontWeight.w500,
-                      height: 1.2,
-                    ),
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                ),
-              ],
-            ),
-          ],
-
-          // 教师
-          if (showTeacher) ...[
-            const SizedBox(height: gap),
-            Row(
-              children: [
-                Icon(
-                  Icons.person_rounded,
-                  color: textColor.withValues(alpha: 0.55),
-                  size: infoFontBase,
-                ),
-                const SizedBox(width: 1),
-                Expanded(
-                  child: Text(
-                    course.teacher,
-                    style: TextStyle(
-                      color: textColor.withValues(alpha: 0.60),
-                      fontSize: infoFontBase,
-                      height: 1.2,
-                    ),
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                ),
-              ],
-            ),
-          ],
-        ],
-      ),
-    );
-  }
-
-  Widget _buildContent(double colWidth, double height) {
-    // 可用空间
-    final availW = colWidth - 8; // 左右各4px padding
-    final availH = height - 8; // 上下各4px padding
-
-    final hasLocation = course.location.isNotEmpty;
-    final hasTeacher = course.teacher.isNotEmpty;
-
-    // ── 动态字体：列越窄字越小，但不低于8sp ──────────────────
-    // 标准列宽约55px（5列）；7列时约45px；平板横屏列宽可达180px
-    // 基准字体：名称11，地点10；列宽<44时各降1；
-    // 平板宽列（>=150px）时温和提升到 名称12 / 地点11，避免大屏上偏小
-    final nameFontBase = colWidth < 44
-        ? 10.0
-        : colWidth >= 150
-        ? 12.0
-        : 11.0;
-    final infoFontBase = colWidth < 44
-        ? 9.0
-        : colWidth >= 150
-        ? 11.0
-        : 10.0;
-    final nameLineH = nameFontBase * 1.3;
-    final infoLineH = infoFontBase * 1.3;
-    const gap = 3.0;
-
-    // ── 计算课程名行数 ────────────────────────────────────────
-    // 每行能放几个汉字（汉字宽约等于字号）
-    final charsPerLine = (availW / nameFontBase).floor().clamp(1, 20);
-    final nameCharCount = course.name.length;
-    final nameNaturalLines = (nameCharCount / charsPerLine).ceil().clamp(1, 10);
-
-    // 预留地点空间：至少2行infoLineH + gap
-    final reserveForInfo = hasLocation ? (gap + infoLineH * 2) : 0.0;
-    final nameAvailH = availH - reserveForInfo;
-    final nameLines = (nameAvailH / nameLineH)
-        .floor()
-        .clamp(1, nameNaturalLines)
-        .clamp(1, 10);
-
-    // ── 计算地点行数 ──────────────────────────────────────────
-    final usedByName = nameLineH * nameLines;
-    final afterName = availH - usedByName;
-    final charsPerLineInfo = (availW / infoFontBase).floor().clamp(1, 20);
-    final locCharCount = course.location.length;
-    final locNaturalLines = ((locCharCount + 1) / charsPerLineInfo)
-        .ceil()
-        .clamp(1, 6); // +1 for icon
-
-    int locationLines = 0;
-    if (hasLocation && afterName >= gap + infoLineH) {
-      final locAvailH = afterName - gap - (hasTeacher ? gap + infoLineH : 0);
-      final computedLines = (locAvailH / infoLineH).floor();
-      locationLines = math.max(1, math.min(computedLines, locNaturalLines));
-      locationLines = locationLines.clamp(1, 6);
-    }
-
-    // ── 教师显示判断 ──────────────────────────────────────────
-    final usedSoFar =
-        usedByName + (locationLines > 0 ? gap + infoLineH * locationLines : 0);
-    final showTeacher = hasTeacher && (availH - usedSoFar) >= gap + infoLineH;
-
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(4, 4, 3, 4),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          // 课程名
-          Text(
-            course.name,
-            style: TextStyle(
-              color: Colors.white,
-              fontSize: nameFontBase,
-              fontWeight: FontWeight.w700,
-              height: 1.3,
-            ),
-            maxLines: nameLines,
-            overflow: TextOverflow.ellipsis,
-          ),
-
-          // 地点
-          if (locationLines > 0) ...[
-            const SizedBox(height: gap),
-            Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Padding(
-                  padding: const EdgeInsets.only(top: 1),
-                  child: Icon(
-                    Icons.location_on_rounded,
-                    color: Colors.white70,
-                    size: infoFontBase,
-                  ),
-                ),
-                const SizedBox(width: 1),
-                Expanded(
-                  child: Text(
-                    course.location,
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontSize: infoFontBase,
-                      fontWeight: FontWeight.w500,
-                      height: 1.3,
-                    ),
-                    maxLines: locationLines.clamp(2, 6),
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                ),
-              ],
-            ),
-          ],
-
-          // 教师
-          if (showTeacher) ...[
-            const SizedBox(height: gap),
-            Row(
-              children: [
-                Icon(
-                  Icons.person_rounded,
-                  color: Colors.white60,
-                  size: infoFontBase,
-                ),
-                const SizedBox(width: 1),
-                Expanded(
-                  child: Text(
-                    course.teacher,
-                    style: TextStyle(
-                      color: Colors.white60,
-                      fontSize: infoFontBase,
-                      height: 1.3,
-                    ),
-                    maxLines: 2,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                ),
-              ],
-            ),
-          ],
-        ],
       ),
     );
   }

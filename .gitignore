@@ -49,3 +49,6 @@ app.*.map.json
 /android/app/debug
 /android/app/profile
 /android/app/release
+
+# Standalone M3 copy retained locally after merging into the main project.
+/schedule_app_material3/

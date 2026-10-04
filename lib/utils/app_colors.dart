@@ -1,31 +1,16 @@
 import 'package:flutter/material.dart';
 
-/// 全局颜色常量：与 app.dart 的主题保持一致。
-///
-/// UI 组件应优先引用这里的常量（或 `Theme.of(context).colorScheme`），
-/// 避免散落的魔法色值在改主题时漏改。
 abstract final class AppColors {
-  /// 主色（紫）
-  static const Color primary = Color(0xFF6C63FF);
-
-  /// 次色（粉）
-  static const Color secondary = Color(0xFFFF6584);
-
-  /// 页面背景
-  static const Color background = Color(0xFFF8F7FF);
-
-  /// 主要文字
-  static const Color textPrimary = Color(0xFF1A1A2E);
-
-  /// 次要文字（正文）
-  static const Color textBody = Color(0xFF4A4A6A);
-
-  /// 辅助文字 / 说明
-  static const Color textSecondary = Color(0xFF8888AA);
-
-  /// 输入框填充
-  static const Color inputFill = Color(0xFFF0EFFF);
-
-  /// 分隔线 / 网格线
-  static const Color borderLight = Color(0xFFEEEEF5);
+  static const primary = Color(0xFF356A51);
+  static const secondary = Color(0xFF80543C);
+  static const background = Color(0xFFF6F8F2);
+  static const surface = Color(0xFFFFFFFF);
+  static const surfaceContainer = Color(0xFFEDF1E9);
+  static const primaryContainer = Color(0xFFC5ECD1);
+  static const onPrimaryContainer = Color(0xFF123B29);
+  static const textPrimary = Color(0xFF1B211C);
+  static const textBody = Color(0xFF414B43);
+  static const textSecondary = Color(0xFF626E64);
+  static const inputFill = Color(0xFFE7EDE4);
+  static const borderLight = Color(0xFFDFE5DB);
 }

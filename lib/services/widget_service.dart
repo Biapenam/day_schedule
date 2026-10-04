@@ -8,19 +8,21 @@ import '../services/course_service.dart';
 
 class WidgetService {
   // 必须和 AndroidManifest 中 receiver 的包名一致
-  static const _widgetName = 'ScheduleWidgetProvider';
+  static const _widgetName = 'com.biapenam.day_schedule.ScheduleWidgetProvider';
   static const _platform = MethodChannel('day_schedule/widget');
 
   final CourseService _courseService = CourseService();
 
   /// 初始化：设置 App Group ID（Android 上等同于包名）
   static Future<void> init() async {
+    if (kIsWeb || defaultTargetPlatform != TargetPlatform.android) return;
     // Android 不需要 AppGroupId，仅 iOS 需要；这里保留调用以兼容
     await HomeWidget.setAppGroupId('com.biapenam.day_schedule');
   }
 
   /// 推送今日课程数据到桌面小组件
   Future<void> updateWidget() async {
+    if (kIsWeb || defaultTargetPlatform != TargetPlatform.android) return;
     try {
       await _courseService.ensureMigrated();
       final schedule = await _courseService.getActiveSchedule();
@@ -89,7 +91,7 @@ class WidgetService {
       );
 
       // 通知 Android 刷新桌面组件
-      await HomeWidget.updateWidget(androidName: _widgetName);
+      await HomeWidget.updateWidget(qualifiedAndroidName: _widgetName);
     } catch (e) {
       // Widget 更新失败不应影响主应用，但记录日志便于排查
       debugPrint('updateWidget failed: $e');

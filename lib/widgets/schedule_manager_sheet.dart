@@ -295,7 +295,7 @@ class _ScheduleManagerSheetState extends State<ScheduleManagerSheet> {
         width: 40,
         height: 40,
         decoration: BoxDecoration(
-          color: (isActive ? AppColors.primary : const Color(0xFFAAAAAA))
+          color: (isActive ? AppColors.primary : AppColors.textSecondary)
               .withValues(alpha: 0.12),
           borderRadius: BorderRadius.circular(10),
         ),

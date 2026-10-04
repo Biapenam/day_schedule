@@ -1,12 +1,12 @@
 # Day Schedule
 
-[![release](https://img.shields.io/badge/release-v1.1.5-0d8bdc?style=flat-square)](CHANGELOG.md#v115) [![Flutter](https://img.shields.io/badge/Flutter-3.41.9-02569B?logo=flutter&logoColor=white&style=flat-square)](.github/workflows/ci.yml) [![license](https://img.shields.io/badge/license-PolyForm_Noncommercial_1.0.0-f47c20?style=flat-square)](LICENSE) [![Android](https://img.shields.io/badge/Android-supported-3ddc84?logo=android&logoColor=white&style=flat-square)](#)
+[![release](https://img.shields.io/badge/release-v1.2.0-0d8bdc?style=flat-square)](CHANGELOG.md#v120) [![Flutter](https://img.shields.io/badge/Flutter-3.41.9-02569B?logo=flutter&logoColor=white&style=flat-square)](.github/workflows/ci.yml) [![license](https://img.shields.io/badge/license-PolyForm_Noncommercial_1.0.0-f47c20?style=flat-square)](LICENSE) [![Android](https://img.shields.io/badge/Android-supported-3ddc84?logo=android&logoColor=white&style=flat-square)](#)
 
-> 重命名说明：本次重命名同步更新了 Flutter 包名及各平台应用标识。旧版安装包与新版本不会被系统视为同一应用，正式发布前请先安排数据导出或迁移。
+> 升级说明：v1.2.0 沿用 v1.1.5 的应用标识与数据格式，使用相同正式签名可覆盖升级。
 
 一个用 Flutter 制作的课程表应用，主要面向大学课表这种按周、按节次排课的场景。现在重点支持 Android。
 
-当前版本：`v1.1.5`
+当前版本：`v1.2.0`
 
 ## 运行方式
 
@@ -98,11 +98,11 @@ android/app/src/main/res/xml/schedule_widget_info.xml
 
 - 目前只有 Android 经过专门适配和测试，其他平台未适配。
 - Android 桌面小组件的显示效果可能因系统桌面实现而异。
-- 重命名应用后的新包名不会自动继承旧包名应用的数据；升级前请先导出课表。
+- 从独立 M3 测试版或历史不同包名的版本迁移时，需要通过口令导出、导入课程。
 
 ## 使用说明
 
-首次使用建议先进入右上角设置页，设置学期开始日期和总周数。设置好后，首页会根据当前日期计算当前周。
+首次使用建议先进入底部导航或侧边导航的设置页，设置学期开始日期和总周数。设置好后，首页会根据当前日期计算当前周。
 
 添加课程用右下角的加号按钮。课程保存后会写入本地，并同步刷新桌面小组件数据。
 
@@ -111,6 +111,11 @@ android/app/src/main/res/xml/schedule_widget_info.xml
 ## 更新记录
 
 > 完整更新记录见 [CHANGELOG.md](CHANGELOG.md)。
+
+### v1.2.0
+
+- 对UI进行了重新设计
+- 完成了对Pad大屏设备的调试
 
 ### v1.1.5
 

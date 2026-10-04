@@ -1,17 +1,16 @@
-import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import '../models/course.dart';
 import '../models/schedule.dart';
 import '../services/course_service.dart';
 import '../services/widget_service.dart';
-import '../utils/responsive.dart';
 import '../widgets/schedule_grid.dart';
 import '../widgets/schedule_manager_sheet.dart';
 import '../widgets/week_selector.dart';
 import 'add_course_screen.dart';
 import 'settings_screen.dart';
 import '../utils/app_colors.dart';
+import '../widgets/day_overview.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -153,6 +152,13 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
 
   void _goToWeek(int week) {
     final target = week.clamp(1, _totalWeeks);
+    if (_allCourses.isEmpty) {
+      _selectedWeek = target;
+      _selectedWeekNotifier.value = target;
+      _pageController?.dispose();
+      _pageController = PageController(initialPage: target - 1);
+      return;
+    }
     _pageController?.animateToPage(
       target - 1,
       duration: 350.ms,
@@ -204,141 +210,379 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
     if (_loading) {
       return const Scaffold(body: Center(child: CircularProgressIndicator()));
     }
-
-    return Scaffold(
-      body: SafeArea(
-        // 平板：内容整体限宽居中，避免横屏下横跨整屏；
-        // 手机：不限制宽度，保持现有单栏布局。
-        child: LayoutBuilder(
-          builder: (context, constraints) {
-            final contentMaxWidth =
-                constraints.maxWidth >= Responsive.tabletBreakpoint
-                ? math.min(constraints.maxWidth, Responsive.contentMaxWidth)
-                : constraints.maxWidth;
-            return Center(
-              child: ConstrainedBox(
-                constraints: BoxConstraints(maxWidth: contentMaxWidth),
-                child: Column(
-                  children: [
-                    _buildHeader(),
-                    if (_semesterEnded ||
-                        _semesterNotStarted ||
-                        _semesterNotSet)
-                      _buildSemesterBanner(),
-                    ValueListenableBuilder<int>(
-                      valueListenable: _selectedWeekNotifier,
-                      builder: (context, selectedWeek, child) => WeekSelector(
-                        currentWeek: _currentWeek,
-                        selectedWeek: selectedWeek,
-                        totalWeeks: _totalWeeks,
-                        onWeekChanged: _goToWeek,
-                      ),
-                    ),
-                    const SizedBox(height: 8),
-                    Expanded(
-                      child: PageView.builder(
-                        controller: _pageController!,
-                        itemCount: _totalWeeks,
-                        onPageChanged: (page) {
-                          _selectedWeek = page + 1;
-                          _selectedWeekNotifier.value = _selectedWeek;
-                        },
-                        itemBuilder: (context, index) {
-                          final week = index + 1;
-                          final weekCourses =
-                              _coursesByWeek[week] ?? const <Course>[];
-                          return ScheduleGrid(
-                            courses: weekCourses,
-                            allCourses: _allCourses,
-                            showNonCurrentWeekCourses:
-                                _showNonCurrentWeekCourses,
-                            isCurrentWeek: week == _currentWeek,
-                            onCourseDeleted: _refresh,
-                            onCourseEdited: _refresh,
-                            totalWeeks: _totalWeeks,
-                            dailySections: _dailySections,
-                            weekNumber: week,
-                            currentWeek: _currentWeek,
-                            semesterStart: _semesterStart,
-                            sectionStartTimes: _sectionStartTimes,
-                            sectionDuration: _sectionDuration,
-                          );
-                        },
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            );
-          },
-        ),
-      ),
-      floatingActionButton: ScaleTransition(
-        scale: CurvedAnimation(
-          parent: _fabController,
-          curve: Curves.elasticOut,
-        ),
-        child: FloatingActionButton(
-          onPressed: _openAddCourse,
-          tooltip: '添加课程',
-          child: const Icon(Icons.add_rounded, size: 28),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildHeader() {
-    final now = DateTime.now();
-    const weekdays = ['', '周一', '周二', '周三', '周四', '周五', '周六', '周日'];
-    final todayStr = '${now.month}月${now.day}日 ${weekdays[now.weekday]}';
-
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(20, 12, 20, 4),
-      child: Row(
-        children: [
-          GestureDetector(
-            onTap: _showScheduleManager,
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final wide = constraints.maxWidth >= 1000;
+        final compact = constraints.maxWidth < 600;
+        return Scaffold(
+          body: SafeArea(
+            child: Row(
               children: [
-                Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Text(
-                      _scheduleName,
-                      style: Theme.of(context).textTheme.displayLarge,
+                if (wide) _buildRail(),
+                Expanded(
+                  child: Center(
+                    child: ConstrainedBox(
+                      constraints: const BoxConstraints(maxWidth: 1440),
+                      child: Padding(
+                        padding: EdgeInsets.fromLTRB(
+                          wide ? 28 : 8,
+                          compact ? 0 : 8,
+                          wide ? 28 : 8,
+                          0,
+                        ),
+                        child: Column(
+                          children: [
+                            _buildHeader(wide, compact),
+                            if (_semesterEnded ||
+                                _semesterNotStarted ||
+                                _semesterNotSet)
+                              _buildSemesterBanner(),
+                            SizedBox(height: compact ? 4 : 12),
+                            Expanded(
+                              child: Row(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Expanded(
+                                    child: Column(
+                                      children: [
+                                        ValueListenableBuilder<int>(
+                                          valueListenable:
+                                              _selectedWeekNotifier,
+                                          builder: (context, selectedWeek, _) =>
+                                              WeekSelector(
+                                                currentWeek: _currentWeek,
+                                                selectedWeek: selectedWeek,
+                                                totalWeeks: _totalWeeks,
+                                                onWeekChanged: _goToWeek,
+                                              ),
+                                        ),
+                                        SizedBox(height: compact ? 4 : 12),
+                                        Expanded(
+                                          child: _allCourses.isEmpty
+                                              ? _buildEmptyState()
+                                              : _buildPages(),
+                                        ),
+                                        const SizedBox(height: 12),
+                                      ],
+                                    ),
+                                  ),
+                                  if (wide) ...[
+                                    const SizedBox(width: 20),
+                                    SizedBox(
+                                      width: 280,
+                                      child: SingleChildScrollView(
+                                        child: DayOverview(
+                                          courses:
+                                              _coursesByWeek[_currentWeek] ??
+                                              const [],
+                                          sectionStartTimes: _sectionStartTimes,
+                                          onAddCourse: _openAddCourse,
+                                          onCourseTap: (course) =>
+                                              Navigator.push<bool>(
+                                                context,
+                                                MaterialPageRoute(
+                                                  builder: (_) =>
+                                                      AddCourseScreen(
+                                                        totalWeeks: _totalWeeks,
+                                                        editingCourse: course,
+                                                      ),
+                                                ),
+                                              ).then((saved) {
+                                                if (saved == true) _refresh();
+                                              }),
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                ],
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
                     ),
-                    const SizedBox(width: 6),
-                    const Icon(
-                      Icons.keyboard_arrow_down_rounded,
-                      color: AppColors.primary,
-                      size: 28,
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 2),
-                Text(
-                  todayStr,
-                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                    color: Theme.of(
-                      context,
-                    ).colorScheme.primary.withValues(alpha: 0.7),
                   ),
                 ),
               ],
             ),
           ),
-          const Spacer(),
-          IconButton(
-            onPressed: _openSettings,
-            icon: const Icon(Icons.tune_rounded),
-            style: IconButton.styleFrom(
-              backgroundColor: Colors.white,
-              foregroundColor: AppColors.primary,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(12),
+          bottomNavigationBar: wide
+              ? null
+              : NavigationBar(
+                  selectedIndex: 0,
+                  onDestinationSelected: _onNavigate,
+                  destinations: const [
+                    NavigationDestination(
+                      icon: Icon(Icons.calendar_view_week_outlined),
+                      selectedIcon: Icon(Icons.calendar_view_week_rounded),
+                      label: '课表',
+                    ),
+                    NavigationDestination(
+                      icon: Icon(Icons.dashboard_outlined),
+                      label: '课表管理',
+                    ),
+                    NavigationDestination(
+                      icon: Icon(Icons.tune_rounded),
+                      label: '设置',
+                    ),
+                  ],
+                ),
+          floatingActionButton: wide
+              ? null
+              : ScaleTransition(
+                  scale: CurvedAnimation(
+                    parent: _fabController,
+                    curve: Curves.easeOutBack,
+                  ),
+                  child: FloatingActionButton.extended(
+                    onPressed: _openAddCourse,
+                    icon: const Icon(Icons.add_rounded),
+                    label: const Text('添加课程'),
+                  ),
+                ),
+        );
+      },
+    );
+  }
+
+  void _onNavigate(int index) {
+    if (index == 1) _showScheduleManager();
+    if (index == 2) _openSettings();
+  }
+
+  Widget _buildRail() => NavigationRail(
+    selectedIndex: 0,
+    onDestinationSelected: _onNavigate,
+    labelType: NavigationRailLabelType.all,
+    minWidth: 96,
+    groupAlignment: -0.65,
+    leading: Padding(
+      padding: const EdgeInsets.symmetric(vertical: 24),
+      child: Column(
+        children: [
+          const Icon(Icons.spa_rounded, size: 32, color: AppColors.primary),
+          const SizedBox(height: 32),
+          FloatingActionButton(
+            onPressed: _openAddCourse,
+            tooltip: '添加课程',
+            child: const Icon(Icons.add_rounded),
+          ),
+        ],
+      ),
+    ),
+    destinations: const [
+      NavigationRailDestination(
+        icon: Icon(Icons.calendar_view_week_outlined),
+        selectedIcon: Icon(Icons.calendar_view_week_rounded),
+        label: Text('课表'),
+      ),
+      NavigationRailDestination(
+        icon: Icon(Icons.dashboard_outlined),
+        label: Text('课表管理'),
+      ),
+      NavigationRailDestination(
+        icon: Icon(Icons.tune_rounded),
+        label: Text('设置'),
+      ),
+    ],
+  );
+
+  Widget _buildPages() => PageView.builder(
+    controller: _pageController!,
+    itemCount: _totalWeeks,
+    onPageChanged: (page) {
+      _selectedWeek = page + 1;
+      _selectedWeekNotifier.value = _selectedWeek;
+    },
+    itemBuilder: (context, index) => ScheduleGrid(
+      courses: _coursesByWeek[index + 1] ?? const <Course>[],
+      allCourses: _allCourses,
+      showNonCurrentWeekCourses: _showNonCurrentWeekCourses,
+      isCurrentWeek: index + 1 == _currentWeek,
+      onCourseDeleted: _refresh,
+      onCourseEdited: _refresh,
+      totalWeeks: _totalWeeks,
+      dailySections: _dailySections,
+      weekNumber: index + 1,
+      currentWeek: _currentWeek,
+      semesterStart: _semesterStart,
+      sectionStartTimes: _sectionStartTimes,
+      sectionDuration: _sectionDuration,
+    ),
+  );
+
+  Widget _buildEmptyState() => Center(
+    child: SingleChildScrollView(
+      padding: const EdgeInsets.fromLTRB(24, 20, 24, 88),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Container(
+            width: 88,
+            height: 88,
+            decoration: BoxDecoration(
+              color: AppColors.primaryContainer,
+              borderRadius: BorderRadius.circular(32),
+            ),
+            child: const Icon(
+              Icons.auto_stories_rounded,
+              size: 40,
+              color: AppColors.onPrimaryContainer,
+            ),
+          ),
+          const SizedBox(height: 24),
+          Text(
+            '暂无课程',
+            style: Theme.of(context).textTheme.titleLarge,
+            textAlign: TextAlign.center,
+          ),
+          const SizedBox(height: 12),
+          const Text('可添加课程，或在设置中导入课表。', textAlign: TextAlign.center),
+          const SizedBox(height: 24),
+          FilledButton.icon(
+            onPressed: _openAddCourse,
+            icon: const Icon(Icons.add_rounded),
+            label: const Text('添加第一门课程'),
+          ),
+        ],
+      ),
+    ),
+  );
+
+  Widget _buildHeader(bool wide, bool compact) {
+    final now = DateTime.now();
+    const weekdays = ['', '星期一', '星期二', '星期三', '星期四', '星期五', '星期六', '星期日'];
+    if (compact) {
+      return Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 12),
+        child: Row(
+          children: [
+            Expanded(
+              child: Tooltip(
+                message: _scheduleName,
+                child: InkWell(
+                  onTap: _showScheduleManager,
+                  borderRadius: BorderRadius.circular(12),
+                  child: ConstrainedBox(
+                    constraints: const BoxConstraints(minHeight: 48),
+                    child: Row(
+                      children: [
+                        Flexible(
+                          child: Text(
+                            _scheduleName,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: const TextStyle(
+                              fontSize: 20,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                        ),
+                        const SizedBox(width: 4),
+                        const Icon(
+                          Icons.expand_more_rounded,
+                          size: 20,
+                          color: AppColors.primary,
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
               ),
             ),
+            const SizedBox(width: 8),
+            Text(
+              '${now.month}/${now.day} ${weekdays[now.weekday].replaceFirst('星期', '周')}',
+              style: const TextStyle(
+                fontSize: 12,
+                color: AppColors.textSecondary,
+              ),
+            ),
+          ],
+        ),
+      );
+    }
+
+    return Padding(
+      padding: EdgeInsets.fromLTRB(12, wide ? 16 : 8, 12, 8),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              const Icon(
+                Icons.spa_outlined,
+                size: 17,
+                color: AppColors.primary,
+              ),
+              const SizedBox(width: 8),
+              const Text(
+                'DAY SCHEDULE',
+                style: TextStyle(
+                  fontSize: 11,
+                  letterSpacing: 2,
+                  fontWeight: FontWeight.w700,
+                  color: AppColors.primary,
+                ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Text(
+                  '${now.month}月${now.day}日 · ${weekdays[now.weekday]}',
+                  textAlign: TextAlign.end,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: const TextStyle(
+                    fontSize: 12,
+                    color: AppColors.textSecondary,
+                  ),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 12),
+          Row(
+            children: [
+              Expanded(
+                child: Semantics(
+                  button: true,
+                  label: '切换课表',
+                  child: InkWell(
+                    borderRadius: BorderRadius.circular(16),
+                    onTap: _showScheduleManager,
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 4),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Flexible(
+                            child: Text(
+                              _scheduleName,
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: wide
+                                  ? Theme.of(context).textTheme.displayLarge
+                                  : Theme.of(context).textTheme.headlineMedium,
+                            ),
+                          ),
+                          const SizedBox(width: 8),
+                          const Icon(
+                            Icons.expand_more_rounded,
+                            color: AppColors.primary,
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+              if (wide)
+                FilledButton.icon(
+                  onPressed: _openAddCourse,
+                  icon: const Icon(Icons.add_rounded),
+                  label: const Text('添加课程'),
+                ),
+            ],
           ),
         ],
       ),
@@ -357,13 +601,13 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
       message = '请先在设置中选择学期开始日期';
       onTap = _openSettings;
     } else if (_semesterEnded) {
-      color = const Color(0xFFFF9A3C);
+      color = AppColors.secondary;
       icon = Icons.event_busy_rounded;
       message = '「$_scheduleName」已结束，点击标题可创建新课表';
       onTap = _showScheduleManager;
     } else {
       // notStarted
-      color = const Color(0xFF4FC3F7);
+      color = AppColors.primary;
       icon = Icons.hourglass_top_rounded;
       final s = _semesterStart!;
       message = '「$_scheduleName」将于 ${s.year}年${s.month}月${s.day}日 开始';
@@ -378,7 +622,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
           padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
           decoration: BoxDecoration(
             color: color.withValues(alpha: 0.12),
-            borderRadius: BorderRadius.circular(12),
+            borderRadius: BorderRadius.circular(20),
             border: Border.all(color: color.withValues(alpha: 0.3)),
           ),
           child: Row(

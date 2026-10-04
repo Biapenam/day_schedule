@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'app_colors.dart';
 
 /// 统一的底部弹窗外观：白色圆角面板 + 平板下限制宽度并居中。
 ///
@@ -9,16 +10,17 @@ Future<T?> showAppModalSheet<T>(
   BuildContext context, {
   required WidgetBuilder builder,
   double maxWidth = 640,
-  Color backgroundColor = Colors.white,
+  Color backgroundColor = AppColors.background,
   bool isScrollControlled = true,
 }) {
   return showModalBottomSheet<T>(
     context: context,
     backgroundColor: backgroundColor,
     isScrollControlled: isScrollControlled,
+    useSafeArea: true,
     constraints: BoxConstraints(maxWidth: maxWidth),
     shape: const RoundedRectangleBorder(
-      borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+      borderRadius: BorderRadius.vertical(top: Radius.circular(32)),
     ),
     builder: builder,
   );

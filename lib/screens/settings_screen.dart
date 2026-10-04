@@ -190,8 +190,14 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 padding: const EdgeInsets.all(20),
                 children: const [
                   _ChangelogEntry(
-                    version: 'v1.1.5',
+                    version: 'v1.2.0',
                     isLatest: true,
+                    changes: ['对UI进行了重新设计', '完成了对Pad大屏设备的调试'],
+                  ),
+                  SizedBox(height: 16),
+                  _ChangelogEntry(
+                    version: 'v1.1.5',
+                    isLatest: false,
                     changes: [
                       '将应用更名为 Day Schedule',
                       '使用 PolyForm Noncommercial License 1.0.0',
@@ -296,7 +302,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
           backgroundColor: AppColors.primary,
           behavior: SnackBarBehavior.floating,
           shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(12),
+            borderRadius: BorderRadius.circular(20),
           ),
         ),
       );
@@ -391,7 +397,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                           ),
                           trailing: const Icon(
                             Icons.chevron_right_rounded,
-                            color: Color(0xFFCCCCDD),
+                            color: AppColors.textSecondary,
                           ),
                           onTap: _openScheduleManager,
                         ),
@@ -415,7 +421,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                           ),
                           trailing: const Icon(
                             Icons.chevron_right_rounded,
-                            color: Color(0xFFCCCCDD),
+                            color: AppColors.textSecondary,
                           ),
                           onTap: _openExport,
                         ),
@@ -439,7 +445,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                           ),
                           trailing: const Icon(
                             Icons.chevron_right_rounded,
-                            color: Color(0xFFCCCCDD),
+                            color: AppColors.textSecondary,
                           ),
                           onTap: _openImport,
                         ),
@@ -514,7 +520,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                                     )
                                   : const Icon(
                                       Icons.chevron_right_rounded,
-                                      color: Color(0xFFCCCCDD),
+                                      color: AppColors.textSecondary,
                                     ),
                               onTap: _addingWidget ? null : _requestPinWidget,
                             ),
@@ -538,7 +544,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                               ),
                               trailing: const Icon(
                                 Icons.chevron_right_rounded,
-                                color: Color(0xFFCCCCDD),
+                                color: AppColors.textSecondary,
                               ),
                               onTap: _showManualWidgetGuide,
                             ),
@@ -557,7 +563,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                           children: [
                             _buildInfoTile('应用名称', 'Day Schedule'),
                             const Divider(height: 1),
-                            _buildInfoTile('版本', '1.1.5'),
+                            _buildInfoTile('版本', '1.2.0'),
                             const Divider(height: 1),
                             _buildInfoTile('开发者', 'Sora'),
                             const Divider(height: 1),
@@ -579,7 +585,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                               ),
                               trailing: const Icon(
                                 Icons.chevron_right_rounded,
-                                color: Color(0xFFCCCCDD),
+                                color: AppColors.textSecondary,
                               ),
                               onTap: _showChangelog,
                             ),
@@ -634,15 +640,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
   }) {
     return Container(
       decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(18),
-        boxShadow: [
-          BoxShadow(
-            color: AppColors.primary.withValues(alpha: 0.06),
-            blurRadius: 16,
-            offset: const Offset(0, 3),
-          ),
-        ],
+        color: AppColors.surfaceContainer,
+        borderRadius: BorderRadius.circular(28),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -685,7 +684,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
           backgroundColor: AppColors.primary,
           behavior: SnackBarBehavior.floating,
           shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(12),
+            borderRadius: BorderRadius.circular(20),
           ),
         ),
       );
@@ -782,7 +781,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
       ),
       trailing: const Icon(
         Icons.chevron_right_rounded,
-        color: Color(0xFFCCCCDD),
+        color: AppColors.textSecondary,
       ),
       onTap: _pickDate,
     );
@@ -992,7 +991,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
       ),
       trailing: const Icon(
         Icons.open_in_new_rounded,
-        color: Color(0xFFCCCCDD),
+        color: AppColors.textSecondary,
         size: 19,
       ),
       onTap: () => _openExternalLink(uri),
@@ -1083,7 +1082,7 @@ class _ChangelogEntry extends StatelessWidget {
               width: 12,
               height: 12,
               decoration: BoxDecoration(
-                color: isLatest ? AppColors.primary : const Color(0xFFCCCCDD),
+                color: isLatest ? AppColors.primary : AppColors.textSecondary,
                 shape: BoxShape.circle,
               ),
             ),

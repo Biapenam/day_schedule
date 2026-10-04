@@ -40,7 +40,9 @@ class _CourseDetailSheetState extends State<CourseDetailSheet> {
   @override
   Widget build(BuildContext context) {
     final course = widget.course;
-    final color = Color(course.colorValue);
+    final color = ColorScheme.fromSeed(
+      seedColor: Color(course.colorValue),
+    ).primary;
     final startTime = _getStartTime(course.startSection);
     final endTime = _getEndTime(course.endSection);
     final sections =
@@ -72,19 +74,8 @@ class _CourseDetailSheetState extends State<CourseDetailSheet> {
             margin: const EdgeInsets.fromLTRB(20, 16, 20, 0),
             padding: const EdgeInsets.all(20),
             decoration: BoxDecoration(
-              gradient: LinearGradient(
-                colors: [color.withValues(alpha: 0.85), color],
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-              ),
-              borderRadius: BorderRadius.circular(20),
-              boxShadow: [
-                BoxShadow(
-                  color: color.withValues(alpha: 0.35),
-                  blurRadius: 20,
-                  offset: const Offset(0, 6),
-                ),
-              ],
+              color: color,
+              borderRadius: BorderRadius.circular(28),
             ),
             child: Row(
               children: [
@@ -236,7 +227,7 @@ class _CourseDetailSheetState extends State<CourseDetailSheet> {
     final confirm = await showDialog<bool>(
       context: context,
       builder: (_) => AlertDialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(28)),
         title: const Text('删除课程'),
         content: Text('确定要删除「${widget.course.name}」吗？'),
         actions: [
@@ -318,7 +309,7 @@ class _InfoRow extends StatelessWidget {
                 label,
                 style: const TextStyle(
                   fontSize: 11,
-                  color: Color(0xFFAAAAAA),
+                  color: AppColors.textSecondary,
                   fontWeight: FontWeight.w500,
                 ),
               ),

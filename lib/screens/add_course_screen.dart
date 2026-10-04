@@ -197,7 +197,7 @@ class _AddCourseScreenState extends State<AddCourseScreen> {
               onPressed: _saving ? null : _save,
               style: FilledButton.styleFrom(
                 shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12),
+                  borderRadius: BorderRadius.circular(20),
                 ),
                 padding: const EdgeInsets.symmetric(
                   horizontal: 20,
@@ -334,15 +334,8 @@ class _AddCourseScreenState extends State<AddCourseScreen> {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(18),
-        boxShadow: [
-          BoxShadow(
-            color: AppColors.primary.withValues(alpha: 0.06),
-            blurRadius: 16,
-            offset: const Offset(0, 3),
-          ),
-        ],
+        color: AppColors.surfaceContainer,
+        borderRadius: BorderRadius.circular(28),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -387,7 +380,7 @@ class _AddCourseScreenState extends State<AddCourseScreen> {
           '星期',
           style: TextStyle(
             fontSize: 12,
-            color: Color(0xFFAAAAAA),
+            color: AppColors.textSecondary,
             fontWeight: FontWeight.w500,
           ),
         ),
@@ -406,7 +399,7 @@ class _AddCourseScreenState extends State<AddCourseScreen> {
                       color: _dayOfWeek == d
                           ? (d >= 6 ? AppColors.secondary : AppColors.primary)
                           : (d >= 6
-                                ? const Color(0xFFFFF0F3)
+                                ? const Color(0xFFF3E5DC)
                                 : AppColors.inputFill),
                       borderRadius: BorderRadius.circular(10),
                     ),
@@ -441,7 +434,7 @@ class _AddCourseScreenState extends State<AddCourseScreen> {
           '节次',
           style: TextStyle(
             fontSize: 12,
-            color: Color(0xFFAAAAAA),
+            color: AppColors.textSecondary,
             fontWeight: FontWeight.w500,
           ),
         ),
@@ -465,7 +458,7 @@ class _AddCourseScreenState extends State<AddCourseScreen> {
               padding: EdgeInsets.symmetric(horizontal: 8),
               child: Text(
                 '—',
-                style: TextStyle(color: Color(0xFFAAAAAA), fontSize: 18),
+                style: TextStyle(color: AppColors.textSecondary, fontSize: 18),
               ),
             ),
             Expanded(
@@ -518,7 +511,10 @@ class _AddCourseScreenState extends State<AddCourseScreen> {
           children: [
             Text(
               '已选 ${_selectedWeeks.length} / ${widget.totalWeeks} 周',
-              style: const TextStyle(fontSize: 12, color: Color(0xFFAAAAAA)),
+              style: const TextStyle(
+                fontSize: 12,
+                color: AppColors.textSecondary,
+              ),
             ),
             const Spacer(),
             _QuickChip(
@@ -801,7 +797,7 @@ class _SectionDropdown extends StatelessWidget {
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
       decoration: BoxDecoration(
         color: AppColors.inputFill,
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(20),
       ),
       child: DropdownButton<int>(
         value: value.clamp(min, max),

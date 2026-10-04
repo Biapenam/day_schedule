@@ -119,7 +119,7 @@ class ExportSheet extends StatelessWidget {
                       backgroundColor: AppColors.primary,
                       behavior: SnackBarBehavior.floating,
                       shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
+                        borderRadius: BorderRadius.circular(20),
                       ),
                     ),
                   );
@@ -341,7 +341,10 @@ class _ImportSheetState extends State<ImportSheet> {
               style: const TextStyle(fontSize: 13, height: 1.5),
               decoration: const InputDecoration(
                 hintText: '例如：OS1:xxxxx...（长按可粘贴）',
-                hintStyle: TextStyle(fontSize: 13, color: Color(0xFFAAAAAA)),
+                hintStyle: TextStyle(
+                  fontSize: 13,
+                  color: AppColors.textSecondary,
+                ),
               ),
               onSubmitted: (_) => _parse(),
             ),
@@ -370,7 +373,7 @@ class _ImportSheetState extends State<ImportSheet> {
                 padding: const EdgeInsets.all(12),
                 decoration: BoxDecoration(
                   color: AppColors.secondary.withValues(alpha: 0.1),
-                  borderRadius: BorderRadius.circular(12),
+                  borderRadius: BorderRadius.circular(20),
                 ),
                 child: Row(
                   children: [
