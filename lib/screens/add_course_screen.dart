@@ -6,6 +6,7 @@ import '../models/schedule.dart';
 import '../services/course_service.dart';
 import '../services/widget_service.dart';
 import '../utils/app_colors.dart';
+import '../widgets/app_components.dart';
 
 class AddCourseScreen extends StatefulWidget {
   final int totalWeeks;
@@ -205,12 +206,12 @@ class _AddCourseScreenState extends State<AddCourseScreen> {
                 ),
               ),
               child: _saving
-                  ? const SizedBox(
+                  ? SizedBox(
                       width: 16,
                       height: 16,
                       child: CircularProgressIndicator(
                         strokeWidth: 2,
-                        color: Colors.white,
+                        color: context.colors.onPrimary,
                       ),
                     )
                   : const Text(
@@ -228,58 +229,67 @@ class _AddCourseScreenState extends State<AddCourseScreen> {
         key: _formKey,
         // 平板（宽度 >= 840）：双栏布局，充分利用横向空间；
         // 手机 / 窄屏：保持单栏。
-        child: LayoutBuilder(
-          builder: (context, constraints) {
-            final twoColumn = constraints.maxWidth >= 840;
-            final padding = twoColumn ? 24.0 : 16.0;
-            // 周次格子在双栏下按栏宽动态决定列数
-            final weekColumns = twoColumn
-                ? (((constraints.maxWidth - padding * 2 - 20) / 2 / 72)
-                      .floor()
-                      .clamp(4, 8))
-                : 5;
-            return ListView(
-              padding: EdgeInsets.all(padding),
-              children: [
-                if (!twoColumn) ...[
-                  _sectionBasicInfo(),
-                  const SizedBox(height: 20),
-                  _sectionClassTime(),
-                  const SizedBox(height: 20),
-                  _sectionWeeks(weekColumns),
-                  const SizedBox(height: 20),
-                  _sectionColor(),
-                ] else
-                  Row(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.stretch,
-                          children: [
-                            _sectionBasicInfo(),
-                            const SizedBox(height: 20),
-                            _sectionClassTime(),
-                          ],
-                        ),
+        child: Center(
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 1120),
+            child: LayoutBuilder(
+              builder: (context, constraints) {
+                final twoColumn = constraints.maxWidth >= 840;
+                final padding = twoColumn ? 24.0 : 16.0;
+                // 周次格子在双栏下按栏宽动态决定列数
+                final weekColumns = twoColumn
+                    ? (((constraints.maxWidth - padding * 2 - 20) / 2 / 72)
+                          .floor()
+                          .clamp(4, 8))
+                    : constraints.maxWidth < 360
+                    ? 4
+                    : 5;
+                return ListView(
+                  padding: EdgeInsets.all(padding),
+                  keyboardDismissBehavior:
+                      ScrollViewKeyboardDismissBehavior.onDrag,
+                  children: [
+                    if (!twoColumn) ...[
+                      _sectionBasicInfo(),
+                      const SizedBox(height: 20),
+                      _sectionClassTime(),
+                      const SizedBox(height: 20),
+                      _sectionWeeks(weekColumns),
+                      const SizedBox(height: 20),
+                      _sectionColor(),
+                    ] else
+                      Row(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.stretch,
+                              children: [
+                                _sectionBasicInfo(),
+                                const SizedBox(height: 20),
+                                _sectionClassTime(),
+                              ],
+                            ),
+                          ),
+                          const SizedBox(width: 20),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.stretch,
+                              children: [
+                                _sectionWeeks(weekColumns),
+                                const SizedBox(height: 20),
+                                _sectionColor(),
+                              ],
+                            ),
+                          ),
+                        ],
                       ),
-                      const SizedBox(width: 20),
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.stretch,
-                          children: [
-                            _sectionWeeks(weekColumns),
-                            const SizedBox(height: 20),
-                            _sectionColor(),
-                          ],
-                        ),
-                      ),
-                    ],
-                  ),
-                const SizedBox(height: 32),
-              ],
-            );
-          },
+                    const SizedBox(height: 32),
+                  ],
+                );
+              },
+            ),
+          ),
         ),
       ),
     );
@@ -305,7 +315,7 @@ class _AddCourseScreenState extends State<AddCourseScreen> {
 
   Widget _sectionClassTime() {
     return _IntroGate(
-      delay: 100.ms,
+      delay: 40.ms,
       child: _buildSection('上课时间', [
         _buildDayPicker(),
         const SizedBox(height: 14),
@@ -316,7 +326,7 @@ class _AddCourseScreenState extends State<AddCourseScreen> {
 
   Widget _sectionWeeks(int crossAxisCount) {
     return _IntroGate(
-      delay: 200.ms,
+      delay: 80.ms,
       child: _buildSection('上课周次', [
         _buildWeekPicker(crossAxisCount: crossAxisCount),
       ]),
@@ -325,35 +335,25 @@ class _AddCourseScreenState extends State<AddCourseScreen> {
 
   Widget _sectionColor() {
     return _IntroGate(
-      delay: 300.ms,
+      delay: 120.ms,
       child: _buildSection('课程颜色', [_buildColorPicker()]),
     );
   }
 
-  Widget _buildSection(String title, List<Widget> children) {
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: AppColors.surfaceContainer,
-        borderRadius: BorderRadius.circular(28),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            title,
-            style: const TextStyle(
-              fontSize: 13,
-              fontWeight: FontWeight.w700,
-              color: AppColors.primary,
-            ),
-          ),
-          const SizedBox(height: 12),
-          ...children,
-        ],
-      ),
-    );
-  }
+  Widget _buildSection(String title, List<Widget> children) => AppSectionCard(
+    title: title,
+    subtitle: switch (title) {
+      '基本信息' => '填写课程名称，教师与地点可稍后补充',
+      '上课时间' => '选择星期与连续上课节次',
+      '上课周次' => '按学期安排，支持单周与双周',
+      _ => '在课表中快速识别这门课程',
+    },
+    padding: const EdgeInsets.fromLTRB(20, 0, 20, 20),
+    child: Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: children,
+    ),
+  );
 
   Widget _buildTextField(
     TextEditingController ctrl,
@@ -364,65 +364,38 @@ class _AddCourseScreenState extends State<AddCourseScreen> {
     return TextFormField(
       controller: ctrl,
       validator: validator,
+      textInputAction: TextInputAction.next,
+      autovalidateMode: AutovalidateMode.onUserInteraction,
       decoration: InputDecoration(
         labelText: label,
-        prefixIcon: Icon(icon, size: 18, color: AppColors.primary),
+        prefixIcon: Icon(icon, size: 18, color: context.colors.primary),
       ),
     );
   }
 
   Widget _buildDayPicker() {
-    const days = ['', '一', '二', '三', '四', '五', '六', '日'];
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        const Text(
-          '星期',
-          style: TextStyle(
-            fontSize: 12,
-            color: AppColors.textSecondary,
-            fontWeight: FontWeight.w500,
-          ),
-        ),
-        const SizedBox(height: 8),
-        Row(
-          children: [
-            for (int d = 1; d <= 7; d++)
-              Expanded(
-                child: GestureDetector(
-                  onTap: () => setState(() => _dayOfWeek = d),
-                  child: AnimatedContainer(
-                    duration: 200.ms,
-                    margin: const EdgeInsets.symmetric(horizontal: 2),
-                    height: 38,
-                    decoration: BoxDecoration(
-                      color: _dayOfWeek == d
-                          ? (d >= 6 ? AppColors.secondary : AppColors.primary)
-                          : (d >= 6
-                                ? const Color(0xFFF3E5DC)
-                                : AppColors.inputFill),
-                      borderRadius: BorderRadius.circular(10),
-                    ),
-                    child: Center(
-                      child: Text(
-                        days[d],
-                        style: TextStyle(
-                          fontSize: 13,
-                          fontWeight: FontWeight.w600,
-                          color: _dayOfWeek == d
-                              ? Colors.white
-                              : (d >= 6
-                                    ? AppColors.secondary
-                                    : AppColors.textBody),
-                        ),
-                      ),
-                    ),
-                  ),
-                ),
+    const days = ['一', '二', '三', '四', '五', '六', '日'];
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        // Wrap on narrow screens instead of shrinking seven targets below 48 dp.
+        final columns = constraints.maxWidth < 7 * 52 ? 4 : 7;
+        return Wrap(
+          spacing: 4,
+          runSpacing: 4,
+          children: List.generate(
+            7,
+            (i) => SizedBox(
+              width: (constraints.maxWidth - (columns - 1) * 4) / columns,
+              child: AppChoiceButton(
+                label: days[i],
+                semanticLabel: '星期${days[i]}',
+                selected: _dayOfWeek == i + 1,
+                onPressed: () => setState(() => _dayOfWeek = i + 1),
               ),
-          ],
-        ),
-      ],
+            ),
+          ),
+        );
+      },
     );
   }
 
@@ -430,11 +403,11 @@ class _AddCourseScreenState extends State<AddCourseScreen> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text(
+        Text(
           '节次',
           style: TextStyle(
             fontSize: 12,
-            color: AppColors.textSecondary,
+            color: context.colors.textSecondary,
             fontWeight: FontWeight.w500,
           ),
         ),
@@ -454,11 +427,14 @@ class _AddCourseScreenState extends State<AddCourseScreen> {
                 },
               ),
             ),
-            const Padding(
+            Padding(
               padding: EdgeInsets.symmetric(horizontal: 8),
               child: Text(
                 '—',
-                style: TextStyle(color: AppColors.textSecondary, fontSize: 18),
+                style: TextStyle(
+                  color: context.colors.textSecondary,
+                  fontSize: 18,
+                ),
               ),
             ),
             Expanded(
@@ -475,9 +451,9 @@ class _AddCourseScreenState extends State<AddCourseScreen> {
         const SizedBox(height: 8),
         Text(
           '${_getStartTime(_startSection)} — ${_getEndTime(_endSection)}',
-          style: const TextStyle(
+          style: TextStyle(
             fontSize: 12,
-            color: AppColors.primary,
+            color: context.colors.primary,
             fontWeight: FontWeight.w600,
           ),
         ),
@@ -509,14 +485,16 @@ class _AddCourseScreenState extends State<AddCourseScreen> {
         // 顶部：已选信息 + 全选
         Row(
           children: [
-            Text(
-              '已选 ${_selectedWeeks.length} / ${widget.totalWeeks} 周',
-              style: const TextStyle(
-                fontSize: 12,
-                color: AppColors.textSecondary,
+            Expanded(
+              child: Text(
+                '已选 ${_selectedWeeks.length} / ${widget.totalWeeks} 周',
+                style: TextStyle(
+                  fontSize: 12,
+                  color: context.colors.textSecondary,
+                ),
               ),
             ),
-            const Spacer(),
+            const SizedBox(width: 8),
             _QuickChip(
               label: '全选',
               active: allSelected,
@@ -534,7 +512,9 @@ class _AddCourseScreenState extends State<AddCourseScreen> {
         ),
         const SizedBox(height: 8),
         // 快捷选择：单周 / 双周
-        Row(
+        Wrap(
+          spacing: 8,
+          runSpacing: 4,
           children: [
             _QuickChip(
               label: '单周',
@@ -543,7 +523,6 @@ class _AddCourseScreenState extends State<AddCourseScreen> {
               onTap: () =>
                   setState(() => _selectedWeeks = Set<int>.from(oddWeeks)),
             ),
-            const SizedBox(width: 8),
             _QuickChip(
               label: '双周',
               icon: Icons.looks_two_rounded,
@@ -551,7 +530,6 @@ class _AddCourseScreenState extends State<AddCourseScreen> {
               onTap: () =>
                   setState(() => _selectedWeeks = Set<int>.from(evenWeeks)),
             ),
-            const SizedBox(width: 8),
             _QuickChip(
               label: '清空',
               icon: Icons.clear_rounded,
@@ -569,98 +547,64 @@ class _AddCourseScreenState extends State<AddCourseScreen> {
             crossAxisCount: crossAxisCount,
             mainAxisSpacing: 8,
             crossAxisSpacing: 8,
-            childAspectRatio: 1.6,
+            mainAxisExtent: 48,
           ),
           itemCount: widget.totalWeeks,
           itemBuilder: (_, i) {
             final week = i + 1;
             final selected = _selectedWeeks.contains(week);
-            final isOdd = week.isOdd;
-            return GestureDetector(
-              onTap: () {
-                setState(() {
-                  if (selected) {
-                    _selectedWeeks.remove(week);
-                  } else {
-                    _selectedWeeks.add(week);
-                  }
-                });
-              },
-              child: AnimatedContainer(
-                duration: 150.ms,
-                decoration: BoxDecoration(
-                  color: selected
-                      ? AppColors.primary
-                      : isOdd
-                      ? AppColors.inputFill
-                      : const Color(0xFFE8F4FD),
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                child: Center(
-                  child: Text(
-                    '$week',
-                    style: TextStyle(
-                      fontSize: 13,
-                      fontWeight: FontWeight.w600,
-                      color: selected ? Colors.white : AppColors.textBody,
-                    ),
-                  ),
-                ),
-              ),
+            return AppChoiceButton(
+              label: '$week',
+              semanticLabel: '第 $week 周',
+              selected: selected,
+              onPressed: () => setState(() {
+                if (selected) {
+                  _selectedWeeks.remove(week);
+                } else {
+                  _selectedWeeks.add(week);
+                }
+              }),
             );
           },
-        ),
-        const SizedBox(height: 6),
-        // 图例
-        const Row(
-          children: [
-            _LegendDot(color: AppColors.inputFill, label: '单周'),
-            SizedBox(width: 12),
-            _LegendDot(color: Color(0xFFE8F4FD), label: '双周'),
-            SizedBox(width: 12),
-            _LegendDot(color: AppColors.primary, label: '已选'),
-          ],
         ),
       ],
     );
   }
 
-  Widget _buildColorPicker() {
-    return Wrap(
-      spacing: 12,
-      runSpacing: 12,
-      children: courseColors.map((colorVal) {
-        final color = Color(colorVal);
-        final selected = _selectedColor == colorVal;
-        return GestureDetector(
-          onTap: () => setState(() => _selectedColor = colorVal),
-          child: AnimatedContainer(
-            duration: 200.ms,
-            width: 40,
-            height: 40,
-            decoration: BoxDecoration(
-              color: color,
-              shape: BoxShape.circle,
-              border: selected
-                  ? Border.all(color: color.withValues(alpha: 0.5), width: 3)
-                  : null,
-              boxShadow: selected
-                  ? [
-                      BoxShadow(
-                        color: color.withValues(alpha: 0.5),
-                        blurRadius: 12,
-                      ),
-                    ]
-                  : [],
+  Widget _buildColorPicker() => Wrap(
+    spacing: 8,
+    runSpacing: 8,
+    children: List.generate(courseColors.length, (i) {
+      final colorVal = courseColors[i];
+      final color = Color(colorVal);
+      final selected = _selectedColor == colorVal;
+      final foreground =
+          ThemeData.estimateBrightnessForColor(color) == Brightness.dark
+          ? Colors.white
+          : Colors.black;
+      return Semantics(
+        selected: selected,
+        child: Tooltip(
+          message: '课程颜色 ${i + 1}',
+          child: IconButton(
+            onPressed: () => setState(() => _selectedColor = colorVal),
+            style: IconButton.styleFrom(
+              backgroundColor: color,
+              foregroundColor: foreground,
+              fixedSize: const Size(48, 48),
+              side: selected
+                  ? BorderSide(color: context.colors.textPrimary, width: 2)
+                  : BorderSide.none,
             ),
-            child: selected
-                ? const Icon(Icons.check_rounded, color: Colors.white, size: 20)
-                : null,
+            icon: Icon(
+              selected ? Icons.check_rounded : Icons.circle,
+              size: selected ? 22 : 0,
+            ),
           ),
-        );
-      }).toList(),
-    );
-  }
+        ),
+      );
+    }),
+  );
 }
 
 // ── 快捷选择按钮 ──────────────────────────────────────────────
@@ -678,72 +622,13 @@ class _QuickChip extends StatelessWidget {
   });
 
   @override
-  Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: onTap,
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 180),
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-        decoration: BoxDecoration(
-          color: active ? AppColors.primary : AppColors.inputFill,
-          borderRadius: BorderRadius.circular(20),
-          border: active
-              ? null
-              : Border.all(color: AppColors.primary.withValues(alpha: 0.3)),
-        ),
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            if (icon != null) ...[
-              Icon(
-                icon,
-                size: 14,
-                color: active ? Colors.white : AppColors.primary,
-              ),
-              const SizedBox(width: 4),
-            ],
-            Text(
-              label,
-              style: TextStyle(
-                fontSize: 12,
-                fontWeight: FontWeight.w700,
-                color: active ? Colors.white : AppColors.primary,
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-// ── 图例小点 ──────────────────────────────────────────────────
-class _LegendDot extends StatelessWidget {
-  final Color color;
-  final String label;
-  const _LegendDot({required this.color, required this.label});
-
-  @override
-  Widget build(BuildContext context) {
-    return Row(
-      children: [
-        Container(
-          width: 12,
-          height: 12,
-          decoration: BoxDecoration(
-            color: color,
-            borderRadius: BorderRadius.circular(3),
-            border: Border.all(color: Colors.grey.withValues(alpha: 0.3)),
-          ),
-        ),
-        const SizedBox(width: 4),
-        Text(
-          label,
-          style: const TextStyle(fontSize: 10, color: AppColors.textSecondary),
-        ),
-      ],
-    );
-  }
+  Widget build(BuildContext context) => FilterChip(
+    label: Text(label),
+    selected: active,
+    onSelected: (_) => onTap(),
+    visualDensity: VisualDensity.compact,
+    avatar: icon == null ? null : Icon(icon, size: 16),
+  );
 }
 
 /// 一次性入场动画门：动画只在首次挂载时播放一次，
@@ -763,15 +648,15 @@ class _IntroGateState extends State<_IntroGate> {
 
   @override
   Widget build(BuildContext context) {
-    if (_done) return widget.child;
+    if (_done || MediaQuery.disableAnimationsOf(context)) return widget.child;
     return widget.child
         .animate(
           onComplete: (_) {
             if (mounted) setState(() => _done = true);
           },
         )
-        .fadeIn(delay: widget.delay, duration: 350.ms)
-        .slideY(begin: 0.2);
+        .fadeIn(delay: widget.delay, duration: 220.ms)
+        .slideY(begin: 0.04);
   }
 }
 
@@ -793,27 +678,30 @@ class _SectionDropdown extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
-      decoration: BoxDecoration(
-        color: AppColors.inputFill,
-        borderRadius: BorderRadius.circular(20),
-      ),
-      child: DropdownButton<int>(
-        value: value.clamp(min, max),
-        isExpanded: true,
-        underline: const SizedBox.shrink(),
-        dropdownColor: Colors.white,
-        style: const TextStyle(
-          color: AppColors.textPrimary,
-          fontSize: 14,
-          fontWeight: FontWeight.w600,
+    return Semantics(
+      label: label,
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+        decoration: BoxDecoration(
+          color: context.colors.inputFill,
+          borderRadius: BorderRadius.circular(20),
         ),
-        items: List.generate(max - min + 1, (i) {
-          final s = min + i;
-          return DropdownMenuItem(value: s, child: Text('第 $s 节'));
-        }),
-        onChanged: (v) => onChanged(v!),
+        child: DropdownButton<int>(
+          value: value.clamp(min, max),
+          isExpanded: true,
+          underline: const SizedBox.shrink(),
+          dropdownColor: context.colors.surface,
+          style: TextStyle(
+            color: context.colors.textPrimary,
+            fontSize: 14,
+            fontWeight: FontWeight.w600,
+          ),
+          items: List.generate(max - min + 1, (i) {
+            final s = min + i;
+            return DropdownMenuItem(value: s, child: Text('第 $s 节'));
+          }),
+          onChanged: (v) => onChanged(v!),
+        ),
       ),
     );
   }

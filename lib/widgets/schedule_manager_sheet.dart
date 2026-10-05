@@ -3,6 +3,7 @@ import '../models/schedule.dart';
 import '../services/course_service.dart';
 import '../utils/app_modal_sheet.dart';
 import '../utils/app_colors.dart';
+import 'app_components.dart';
 
 /// 课表管理底部面板：新建、切换、重命名、删除课表。
 /// 切换或新建后会通过 onChanged 回调通知调用方刷新。
@@ -130,7 +131,9 @@ class _ScheduleManagerSheetState extends State<ScheduleManagerSheet> {
           ),
           FilledButton(
             onPressed: () => Navigator.pop(context, true),
-            style: FilledButton.styleFrom(backgroundColor: AppColors.secondary),
+            style: FilledButton.styleFrom(
+              backgroundColor: context.colors.secondary,
+            ),
             child: const Text('删除'),
           ),
         ],
@@ -178,7 +181,7 @@ class _ScheduleManagerSheetState extends State<ScheduleManagerSheet> {
               borderSide: BorderSide.none,
             ),
             filled: true,
-            fillColor: AppColors.inputFill,
+            fillColor: context.colors.inputFill,
           ),
         ),
         actions: [
@@ -207,48 +210,18 @@ class _ScheduleManagerSheetState extends State<ScheduleManagerSheet> {
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Container(
-            width: 40,
-            height: 4,
-            decoration: BoxDecoration(
-              color: Colors.grey[300],
-              borderRadius: BorderRadius.circular(2),
-            ),
-          ),
-          const SizedBox(height: 16),
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 20),
-            child: Row(
-              children: [
-                const Icon(
-                  Icons.collections_bookmark_rounded,
-                  color: AppColors.primary,
-                  size: 20,
-                ),
-                const SizedBox(width: 8),
-                const Text(
-                  '课表管理',
-                  style: TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.w700,
-                    color: AppColors.textPrimary,
-                  ),
-                ),
-                const Spacer(),
-                TextButton.icon(
-                  onPressed: _busy ? null : _createSchedule,
-                  icon: const Icon(Icons.add_rounded, size: 18),
-                  label: const Text(
-                    '新建',
-                    style: TextStyle(fontWeight: FontWeight.w600),
-                  ),
-                  style: TextButton.styleFrom(
-                    foregroundColor: AppColors.primary,
-                  ),
-                ),
-              ],
+            child: SheetHeading(
+              title: '课表管理',
+              icon: Icons.collections_bookmark_outlined,
+              trailing: TextButton(
+                onPressed: _busy ? null : _createSchedule,
+                child: const Text('新建'),
+              ),
             ),
           ),
+          const SizedBox(height: 12),
           const Divider(height: 1),
           if (_loading)
             const Padding(
@@ -290,51 +263,68 @@ class _ScheduleManagerSheetState extends State<ScheduleManagerSheet> {
       subtitle = '未设置学期开始日期';
     }
 
-    return ListTile(
-      leading: Container(
-        width: 40,
-        height: 40,
-        decoration: BoxDecoration(
-          color: (isActive ? AppColors.primary : AppColors.textSecondary)
-              .withValues(alpha: 0.12),
-          borderRadius: BorderRadius.circular(10),
-        ),
-        child: Icon(
-          isActive ? Icons.check_circle_rounded : Icons.calendar_month_rounded,
-          color: isActive ? AppColors.primary : AppColors.textSecondary,
-          size: 20,
-        ),
-      ),
-      title: Text(
-        schedule.name,
-        style: TextStyle(
-          fontSize: 15,
-          fontWeight: isActive ? FontWeight.w700 : FontWeight.w500,
-          color: AppColors.textPrimary,
-        ),
-      ),
-      subtitle: Text(
-        subtitle,
-        style: const TextStyle(fontSize: 12, color: AppColors.textSecondary),
-      ),
-      trailing: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          IconButton(
-            icon: const Icon(Icons.edit_rounded, size: 20),
-            color: AppColors.textSecondary,
-            onPressed: () => _renameSchedule(schedule),
-            tooltip: '重命名',
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+      child: Material(
+        color: isActive
+            ? context.colors.primaryContainer
+            : context.colors.surface,
+        borderRadius: BorderRadius.circular(16),
+        clipBehavior: Clip.antiAlias,
+        child: ListTile(
+          leading: Container(
+            width: 40,
+            height: 40,
+            decoration: BoxDecoration(
+              color:
+                  (isActive
+                          ? context.colors.primary
+                          : context.colors.textSecondary)
+                      .withValues(alpha: 0.12),
+              borderRadius: BorderRadius.circular(10),
+            ),
+            child: Icon(
+              isActive
+                  ? Icons.check_circle_rounded
+                  : Icons.calendar_month_rounded,
+              color: isActive
+                  ? context.colors.primary
+                  : context.colors.textSecondary,
+              size: 20,
+            ),
           ),
-          IconButton(
-            icon: const Icon(Icons.delete_outline_rounded, size: 20),
-            color: AppColors.secondary,
-            onPressed: () => _deleteSchedule(schedule),
-            tooltip: '删除',
+          title: Text(
+            schedule.name,
+            style: TextStyle(
+              fontSize: 15,
+              fontWeight: isActive ? FontWeight.w700 : FontWeight.w500,
+              color: context.colors.textPrimary,
+            ),
           ),
-        ],
+          subtitle: Text(
+            subtitle,
+            style: TextStyle(fontSize: 12, color: context.colors.textSecondary),
+          ),
+          trailing: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              IconButton(
+                icon: const Icon(Icons.edit_rounded, size: 20),
+                color: context.colors.textSecondary,
+                onPressed: () => _renameSchedule(schedule),
+                tooltip: '重命名',
+              ),
+              IconButton(
+                icon: const Icon(Icons.delete_outline_rounded, size: 20),
+                color: context.colors.error,
+                onPressed: () => _deleteSchedule(schedule),
+                tooltip: '删除',
+              ),
+            ],
+          ),
+          onTap: () => _switchTo(schedule.id),
+        ),
       ),
-      onTap: () => _switchTo(schedule.id),
     );
   }
 }

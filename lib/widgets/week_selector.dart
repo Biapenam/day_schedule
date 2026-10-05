@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../utils/app_modal_sheet.dart';
 import '../utils/app_colors.dart';
+import 'app_components.dart';
 
 class WeekSelector extends StatelessWidget {
   final int currentWeek;
@@ -18,7 +19,7 @@ class WeekSelector extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => Padding(
-    padding: const EdgeInsets.symmetric(horizontal: 12),
+    padding: const EdgeInsets.symmetric(horizontal: 0),
     child: Row(
       children: [
         IconButton.filledTonal(
@@ -30,10 +31,9 @@ class WeekSelector extends StatelessWidget {
         ),
         const SizedBox(width: 8),
         Expanded(
-          child: FilledButton.tonal(
+          child: TextButton(
             onPressed: () => _showWeekPicker(context),
-            style: FilledButton.styleFrom(
-              backgroundColor: AppColors.surfaceContainer,
+            style: TextButton.styleFrom(
               padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 12),
             ),
             child: Row(
@@ -50,9 +50,9 @@ class WeekSelector extends StatelessWidget {
                 Flexible(
                   child: Text(
                     '/ $totalWeeks',
-                    style: const TextStyle(
+                    style: TextStyle(
                       fontSize: 12,
-                      color: AppColors.textSecondary,
+                      color: context.colors.textSecondary,
                     ),
                   ),
                 ),
@@ -113,30 +113,18 @@ class _WeekPickerSheet extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.all(20),
+    return SingleChildScrollView(
+      padding: const EdgeInsets.fromLTRB(24, 0, 24, 24),
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          // 拖拽条
-          Container(
-            width: 40,
-            height: 4,
-            decoration: BoxDecoration(
-              color: Colors.grey[300],
-              borderRadius: BorderRadius.circular(2),
-            ),
+          const SheetHeading(title: '选择周次', icon: Icons.date_range_rounded),
+          const SizedBox(height: 8),
+          Text(
+            '共 $totalWeeks 周 · 点击周次跳转',
+            style: Theme.of(context).textTheme.bodySmall,
           ),
-          const SizedBox(height: 16),
-          const Text(
-            '选择周次',
-            style: TextStyle(
-              fontSize: 16,
-              fontWeight: FontWeight.w700,
-              color: AppColors.textPrimary,
-            ),
-          ),
-          const SizedBox(height: 16),
+          const SizedBox(height: 20),
           GridView.builder(
             shrinkWrap: true,
             physics: const NeverScrollableScrollPhysics(),
@@ -144,7 +132,7 @@ class _WeekPickerSheet extends StatelessWidget {
               crossAxisCount: 5,
               mainAxisSpacing: 8,
               crossAxisSpacing: 8,
-              childAspectRatio: 1.15,
+              mainAxisExtent: 52,
             ),
             itemCount: totalWeeks,
             itemBuilder: (_, i) {
@@ -156,13 +144,13 @@ class _WeekPickerSheet extends StatelessWidget {
                   minimumSize: const Size(48, 48),
                   padding: EdgeInsets.zero,
                   backgroundColor: isSelected
-                      ? AppColors.primary
+                      ? context.colors.primary
                       : isCurrent
-                      ? AppColors.primaryContainer
-                      : AppColors.inputFill,
+                      ? context.colors.primaryContainer
+                      : context.colors.inputFill,
                   foregroundColor: isSelected
-                      ? Colors.white
-                      : AppColors.textPrimary,
+                      ? context.colors.onPrimary
+                      : context.colors.textPrimary,
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(isSelected ? 24 : 12),
                   ),

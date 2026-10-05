@@ -119,7 +119,11 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
       _scheduleName = schedule?.name ?? '我的课表';
       _loading = false;
     });
-    _fabController.forward();
+    if (MediaQuery.disableAnimationsOf(context)) {
+      _fabController.value = 1;
+    } else {
+      _fabController.forward();
+    }
     await WidgetService().updateWidget();
   }
 
@@ -161,7 +165,9 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
     }
     _pageController?.animateToPage(
       target - 1,
-      duration: 350.ms,
+      duration: MediaQuery.disableAnimationsOf(context)
+          ? Duration.zero
+          : 250.ms,
       curve: Curves.easeInOutCubic,
     );
   }
@@ -178,7 +184,9 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
           ).animate(CurvedAnimation(parent: anim, curve: Curves.easeOutCubic)),
           child: child,
         ),
-        transitionDuration: 400.ms,
+        transitionDuration: MediaQuery.disableAnimationsOf(context)
+            ? Duration.zero
+            : 250.ms,
       ),
     );
     if (result == true) _refresh();
@@ -225,9 +233,9 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                       constraints: const BoxConstraints(maxWidth: 1440),
                       child: Padding(
                         padding: EdgeInsets.fromLTRB(
-                          wide ? 28 : 8,
+                          wide ? 24 : 12,
                           compact ? 0 : 8,
-                          wide ? 28 : 8,
+                          wide ? 24 : 12,
                           0,
                         ),
                         child: Column(
@@ -332,7 +340,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
               : ScaleTransition(
                   scale: CurvedAnimation(
                     parent: _fabController,
-                    curve: Curves.easeOutBack,
+                    curve: Curves.easeOutCubic,
                   ),
                   child: FloatingActionButton.extended(
                     onPressed: _openAddCourse,
@@ -360,7 +368,11 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
       padding: const EdgeInsets.symmetric(vertical: 24),
       child: Column(
         children: [
-          const Icon(Icons.spa_rounded, size: 32, color: AppColors.primary),
+          Icon(
+            Icons.calendar_month_rounded,
+            size: 32,
+            color: context.colors.primary,
+          ),
           const SizedBox(height: 32),
           FloatingActionButton(
             onPressed: _openAddCourse,
@@ -421,13 +433,13 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
             width: 88,
             height: 88,
             decoration: BoxDecoration(
-              color: AppColors.primaryContainer,
+              color: context.colors.primaryContainer,
               borderRadius: BorderRadius.circular(32),
             ),
-            child: const Icon(
+            child: Icon(
               Icons.auto_stories_rounded,
               size: 40,
-              color: AppColors.onPrimaryContainer,
+              color: context.colors.onPrimaryContainer,
             ),
           ),
           const SizedBox(height: 24),
@@ -437,7 +449,10 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
             textAlign: TextAlign.center,
           ),
           const SizedBox(height: 12),
-          const Text('可添加课程，或在设置中导入课表。', textAlign: TextAlign.center),
+          const Text(
+            '添加第一门课程，开始安排这一周。\n已有课表？可在设置中使用口令导入。',
+            textAlign: TextAlign.center,
+          ),
           const SizedBox(height: 24),
           FilledButton.icon(
             onPressed: _openAddCourse,
@@ -479,10 +494,10 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                           ),
                         ),
                         const SizedBox(width: 4),
-                        const Icon(
+                        Icon(
                           Icons.expand_more_rounded,
                           size: 20,
-                          color: AppColors.primary,
+                          color: context.colors.primary,
                         ),
                       ],
                     ),
@@ -493,9 +508,9 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
             const SizedBox(width: 8),
             Text(
               '${now.month}/${now.day} ${weekdays[now.weekday].replaceFirst('星期', '周')}',
-              style: const TextStyle(
+              style: TextStyle(
                 fontSize: 12,
-                color: AppColors.textSecondary,
+                color: context.colors.textSecondary,
               ),
             ),
           ],
@@ -510,19 +525,19 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
         children: [
           Row(
             children: [
-              const Icon(
-                Icons.spa_outlined,
+              Icon(
+                Icons.calendar_month_outlined,
                 size: 17,
-                color: AppColors.primary,
+                color: context.colors.primary,
               ),
               const SizedBox(width: 8),
-              const Text(
+              Text(
                 'DAY SCHEDULE',
                 style: TextStyle(
                   fontSize: 11,
                   letterSpacing: 2,
                   fontWeight: FontWeight.w700,
-                  color: AppColors.primary,
+                  color: context.colors.primary,
                 ),
               ),
               const SizedBox(width: 12),
@@ -532,9 +547,9 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                   textAlign: TextAlign.end,
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontSize: 12,
-                    color: AppColors.textSecondary,
+                    color: context.colors.textSecondary,
                   ),
                 ),
               ),
@@ -566,9 +581,9 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                             ),
                           ),
                           const SizedBox(width: 8),
-                          const Icon(
+                          Icon(
                             Icons.expand_more_rounded,
-                            color: AppColors.primary,
+                            color: context.colors.primary,
                           ),
                         ],
                       ),
@@ -596,18 +611,18 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
     VoidCallback onTap;
 
     if (_semesterNotSet) {
-      color = AppColors.primary;
+      color = context.colors.primary;
       icon = Icons.info_outline_rounded;
       message = '请先在设置中选择学期开始日期';
       onTap = _openSettings;
     } else if (_semesterEnded) {
-      color = AppColors.secondary;
+      color = context.colors.secondary;
       icon = Icons.event_busy_rounded;
       message = '「$_scheduleName」已结束，点击标题可创建新课表';
       onTap = _showScheduleManager;
     } else {
       // notStarted
-      color = AppColors.primary;
+      color = context.colors.primary;
       icon = Icons.hourglass_top_rounded;
       final s = _semesterStart!;
       message = '「$_scheduleName」将于 ${s.year}年${s.month}月${s.day}日 开始';
@@ -616,31 +631,35 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
 
     return Padding(
       padding: const EdgeInsets.fromLTRB(16, 4, 16, 0),
-      child: GestureDetector(
-        onTap: onTap,
-        child: Container(
-          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
-          decoration: BoxDecoration(
-            color: color.withValues(alpha: 0.12),
-            borderRadius: BorderRadius.circular(20),
-            border: Border.all(color: color.withValues(alpha: 0.3)),
-          ),
-          child: Row(
-            children: [
-              Icon(icon, color: color, size: 18),
-              const SizedBox(width: 8),
-              Expanded(
-                child: Text(
-                  message,
-                  style: TextStyle(
-                    fontSize: 12,
-                    fontWeight: FontWeight.w600,
-                    color: color,
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          borderRadius: BorderRadius.circular(16),
+          onTap: onTap,
+          child: Container(
+            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+            decoration: BoxDecoration(
+              color: color.withValues(alpha: 0.12),
+              borderRadius: BorderRadius.circular(20),
+              border: Border.all(color: color.withValues(alpha: 0.3)),
+            ),
+            child: Row(
+              children: [
+                Icon(icon, color: color, size: 18),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: Text(
+                    message,
+                    style: TextStyle(
+                      fontSize: 12,
+                      fontWeight: FontWeight.w600,
+                      color: color,
+                    ),
                   ),
                 ),
-              ),
-              Icon(Icons.chevron_right_rounded, color: color, size: 18),
-            ],
+                Icon(Icons.chevron_right_rounded, color: color, size: 18),
+              ],
+            ),
           ),
         ),
       ),

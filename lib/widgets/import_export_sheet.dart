@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:flutter_animate/flutter_animate.dart';
 import '../models/course.dart';
 import '../models/schedule.dart';
 import '../services/course_service.dart';
 import '../services/import_export_service.dart';
 import '../utils/app_colors.dart';
+import 'app_components.dart';
 
 // ─────────────────────────────────────────────────────────────
 // 导出课表：展示口令 + 复制
@@ -47,37 +47,14 @@ class ExportSheet extends StatelessWidget {
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Center(
-              child: Container(
-                width: 40,
-                height: 4,
-                decoration: BoxDecoration(
-                  color: Colors.grey[300],
-                  borderRadius: BorderRadius.circular(2),
-                ),
-              ),
-            ),
             const SizedBox(height: 16),
-            const Row(
-              children: [
-                Icon(Icons.upload_rounded, color: AppColors.primary, size: 20),
-                SizedBox(width: 8),
-                Text(
-                  '导出课表口令',
-                  style: TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.w700,
-                    color: AppColors.textPrimary,
-                  ),
-                ),
-              ],
-            ),
+            SheetHeading(title: '导出课表口令', icon: Icons.upload_rounded),
             const SizedBox(height: 12),
             Text(
               '口令包含「$scheduleName」（$courseCount 门课程）。在另一台设备打开「设置 → 课表管理 → 从口令导入」并粘贴即可恢复。',
-              style: const TextStyle(
+              style: TextStyle(
                 fontSize: 13,
-                color: AppColors.textSecondary,
+                color: context.colors.textSecondary,
                 height: 1.5,
               ),
             ),
@@ -87,21 +64,21 @@ class ExportSheet extends StatelessWidget {
               width: double.infinity,
               padding: const EdgeInsets.all(14),
               decoration: BoxDecoration(
-                color: AppColors.inputFill,
+                color: context.colors.inputFill,
                 borderRadius: BorderRadius.circular(14),
                 border: Border.all(
-                  color: AppColors.primary.withValues(alpha: 0.2),
+                  color: context.colors.primary.withValues(alpha: 0.2),
                 ),
               ),
               child: SingleChildScrollView(
                 scrollDirection: Axis.horizontal,
                 child: SelectableText(
                   display,
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontFamily: 'monospace',
                     fontSize: 13,
                     height: 1.6,
-                    color: AppColors.textPrimary,
+                    color: context.colors.textPrimary,
                     fontWeight: FontWeight.w600,
                   ),
                 ),
@@ -116,7 +93,6 @@ class ExportSheet extends StatelessWidget {
                   ScaffoldMessenger.of(context).showSnackBar(
                     SnackBar(
                       content: const Text('口令已复制，去另一台设备粘贴导入吧'),
-                      backgroundColor: AppColors.primary,
                       behavior: SnackBarBehavior.floating,
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(20),
@@ -129,17 +105,13 @@ class ExportSheet extends StatelessWidget {
                   '复制口令',
                   style: TextStyle(fontWeight: FontWeight.w700),
                 ),
-                style: FilledButton.styleFrom(
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(14),
-                  ),
-                ),
+                style: FilledButton.styleFrom(),
               ),
             ),
           ],
         ),
       ),
-    ).animate().fadeIn(duration: 250.ms).slideY(begin: 0.1);
+    );
   }
 }
 
@@ -299,39 +271,15 @@ class _ImportSheetState extends State<ImportSheet> {
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Center(
-              child: Container(
-                width: 40,
-                height: 4,
-                decoration: BoxDecoration(
-                  color: Colors.grey[300],
-                  borderRadius: BorderRadius.circular(2),
-                ),
-              ),
-            ),
             const SizedBox(height: 16),
-            const Row(
-              children: [
-                Icon(
-                  Icons.download_rounded,
-                  color: AppColors.primary,
-                  size: 20,
-                ),
-                SizedBox(width: 8),
-                Text(
-                  '从口令导入课表',
-                  style: TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.w700,
-                    color: AppColors.textPrimary,
-                  ),
-                ),
-              ],
-            ),
+            SheetHeading(title: '从口令导入课表', icon: Icons.download_rounded),
             const SizedBox(height: 12),
-            const Text(
+            Text(
               '粘贴另一台设备导出的口令，即可恢复课表。',
-              style: TextStyle(fontSize: 13, color: AppColors.textSecondary),
+              style: TextStyle(
+                fontSize: 13,
+                color: context.colors.textSecondary,
+              ),
             ),
             const SizedBox(height: 12),
             TextField(
@@ -339,11 +287,11 @@ class _ImportSheetState extends State<ImportSheet> {
               maxLines: 3,
               minLines: 2,
               style: const TextStyle(fontSize: 13, height: 1.5),
-              decoration: const InputDecoration(
+              decoration: InputDecoration(
                 hintText: '例如：OS1:xxxxx...（长按可粘贴）',
                 hintStyle: TextStyle(
                   fontSize: 13,
-                  color: AppColors.textSecondary,
+                  color: context.colors.textSecondary,
                 ),
               ),
               onSubmitted: (_) => _parse(),
@@ -360,9 +308,6 @@ class _ImportSheetState extends State<ImportSheet> {
                 ),
                 style: FilledButton.styleFrom(
                   padding: const EdgeInsets.symmetric(vertical: 12),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(14),
-                  ),
                 ),
               ),
             ),
@@ -372,23 +317,23 @@ class _ImportSheetState extends State<ImportSheet> {
                 width: double.infinity,
                 padding: const EdgeInsets.all(12),
                 decoration: BoxDecoration(
-                  color: AppColors.secondary.withValues(alpha: 0.1),
+                  color: context.colors.error.withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(20),
                 ),
                 child: Row(
                   children: [
-                    const Icon(
+                    Icon(
                       Icons.error_outline_rounded,
-                      color: AppColors.secondary,
+                      color: context.colors.error,
                       size: 18,
                     ),
                     const SizedBox(width: 8),
                     Expanded(
                       child: Text(
                         _error!,
-                        style: const TextStyle(
+                        style: TextStyle(
                           fontSize: 12,
-                          color: AppColors.secondary,
+                          color: context.colors.error,
                           fontWeight: FontWeight.w600,
                         ),
                       ),
@@ -406,12 +351,12 @@ class _ImportSheetState extends State<ImportSheet> {
                 child: FilledButton.icon(
                   onPressed: _busy ? null : _doImport,
                   icon: _busy
-                      ? const SizedBox(
+                      ? SizedBox(
                           width: 16,
                           height: 16,
                           child: CircularProgressIndicator(
                             strokeWidth: 2,
-                            color: Colors.white,
+                            color: context.colors.onPrimary,
                           ),
                         )
                       : const Icon(
@@ -422,18 +367,14 @@ class _ImportSheetState extends State<ImportSheet> {
                     _busy ? '正在导入…' : '导入 ${parsed.schedule.name}',
                     style: const TextStyle(fontWeight: FontWeight.w700),
                   ),
-                  style: FilledButton.styleFrom(
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(14),
-                    ),
-                  ),
+                  style: FilledButton.styleFrom(),
                 ),
               ),
             ],
           ],
         ),
       ),
-    ).animate().fadeIn(duration: 250.ms).slideY(begin: 0.1);
+    );
   }
 
   Widget _buildPreview(ExportData data) {
@@ -445,38 +386,37 @@ class _ImportSheetState extends State<ImportSheet> {
       width: double.infinity,
       padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
-        color: AppColors.inputFill,
+        color: context.colors.inputFill,
         borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: AppColors.primary.withValues(alpha: 0.25)),
+        border: Border.all(
+          color: context.colors.primary.withValues(alpha: 0.25),
+        ),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text(
+          Text(
             '即将导入',
             style: TextStyle(
               fontSize: 11,
               fontWeight: FontWeight.w700,
-              color: AppColors.primary,
+              color: context.colors.primary,
             ),
           ),
           const SizedBox(height: 8),
           Text(
             s.name,
-            style: const TextStyle(
+            style: TextStyle(
               fontSize: 16,
               fontWeight: FontWeight.w700,
-              color: AppColors.textPrimary,
+              color: context.colors.textPrimary,
             ),
           ),
           const SizedBox(height: 6),
           Text(
             '${data.courses.length} 门课程 · 共 ${s.totalWeeks} 周 · '
             '每天 ${s.dailySections} 节 · 学期开始 $startText',
-            style: const TextStyle(
-              fontSize: 12,
-              color: AppColors.textSecondary,
-            ),
+            style: TextStyle(fontSize: 12, color: context.colors.textSecondary),
           ),
         ],
       ),

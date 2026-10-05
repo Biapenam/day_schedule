@@ -2,13 +2,13 @@ import 'package:flutter/material.dart';
 import '../models/course.dart';
 import '../models/schedule.dart';
 import '../utils/app_colors.dart';
+import 'app_components.dart';
 
 class DayOverview extends StatelessWidget {
   final List<Course> courses;
   final List<String> sectionStartTimes;
   final VoidCallback onAddCourse;
   final ValueChanged<Course> onCourseTap;
-
   const DayOverview({
     super.key,
     required this.courses,
@@ -26,128 +26,159 @@ class DayOverview extends StatelessWidget {
       0,
       (sum, c) => sum + c.endSection - c.startSection + 1,
     );
+    final text = Theme.of(context).textTheme;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         Container(
           padding: const EdgeInsets.all(24),
           decoration: BoxDecoration(
-            color: AppColors.primaryContainer,
-            borderRadius: BorderRadius.circular(32),
+            color: context.colors.primaryContainer,
+            borderRadius: BorderRadius.circular(24),
           ),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              const Row(
-                children: [
-                  Icon(
-                    Icons.wb_sunny_outlined,
-                    color: AppColors.onPrimaryContainer,
-                  ),
-                  Spacer(),
-                  Text(
-                    'TODAY',
-                    style: TextStyle(
-                      fontSize: 11,
-                      letterSpacing: 2,
-                      color: AppColors.onPrimaryContainer,
-                    ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 24),
-              Text(
-                '今日 ${today.length} 门课程',
-                style: const TextStyle(
-                  fontSize: 26,
-                  height: 1.4,
-                  fontWeight: FontWeight.w600,
-                  color: AppColors.onPrimaryContainer,
-                ),
-              ),
-              const SizedBox(height: 24),
-              Text(
-                '本周 ${courses.length} 门课程 · $sections 节',
-                style: const TextStyle(color: AppColors.onPrimaryContainer),
-              ),
-            ],
-          ),
-        ),
-        const SizedBox(height: 24),
-        Row(
-          children: [
-            Text('今日安排', style: Theme.of(context).textTheme.titleMedium),
-            const Spacer(),
-            Text(
-              '${today.length} 门课',
-              style: const TextStyle(
-                color: AppColors.textSecondary,
-                fontSize: 12,
-              ),
-            ),
-          ],
-        ),
-        const SizedBox(height: 12),
-        if (today.isEmpty)
-          Container(
-            padding: const EdgeInsets.all(24),
-            decoration: BoxDecoration(
-              color: AppColors.surfaceContainer,
-              borderRadius: BorderRadius.circular(24),
-            ),
-            child: const Column(
+          child: DefaultTextStyle.merge(
+            style: TextStyle(color: context.colors.onPrimaryContainer),
+            child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Icon(Icons.coffee_outlined, color: AppColors.primary),
-                SizedBox(height: 12),
-                Text('今天没有课程'),
-                SizedBox(height: 6),
+                Row(
+                  children: [
+                    Icon(
+                      Icons.today_outlined,
+                      size: 20,
+                      color: context.colors.onPrimaryContainer,
+                    ),
+                    const SizedBox(width: 8),
+                    const Text(
+                      '今天',
+                      style: TextStyle(fontWeight: FontWeight.w600),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 16),
                 Text(
-                  '本周课程见左侧课表。',
-                  style: TextStyle(
-                    fontSize: 12,
-                    color: AppColors.textSecondary,
+                  '${today.length}',
+                  style: text.displayLarge?.copyWith(
+                    fontSize: 52,
+                    color: context.colors.onPrimaryContainer,
                   ),
+                ),
+                const SizedBox(height: 4),
+                const Text('门课程'),
+                const SizedBox(height: 24),
+                Divider(
+                  color: context.colors.onPrimaryContainer.withValues(
+                    alpha: 0.15,
+                  ),
+                ),
+                const SizedBox(height: 16),
+                Row(
+                  children: [
+                    Expanded(
+                      child: _Metric(value: '${courses.length}', label: '本周课程'),
+                    ),
+                    Expanded(
+                      child: _Metric(value: '$sections', label: '本周节次'),
+                    ),
+                  ],
                 ),
               ],
             ),
           ),
-        ...today.map(
-          (course) => Padding(
-            padding: const EdgeInsets.only(bottom: 8),
-            child: Material(
-              color: AppColors.surfaceContainer,
-              borderRadius: BorderRadius.circular(20),
-              clipBehavior: Clip.antiAlias,
-              child: ListTile(
-                contentPadding: const EdgeInsets.symmetric(
-                  horizontal: 16,
-                  vertical: 8,
-                ),
-                onTap: () => onCourseTap(course),
-                leading: Container(
-                  width: 4,
-                  height: 36,
-                  decoration: BoxDecoration(
-                    color: Color(course.colorValue),
-                    borderRadius: BorderRadius.circular(4),
+        ),
+        const SizedBox(height: 20),
+        AppSectionCard(
+          title: '今日安排',
+          subtitle: today.isEmpty ? '留一点时间，给自己' : '按上课时间排序',
+          padding: const EdgeInsets.fromLTRB(12, 0, 12, 12),
+          child: Column(
+            children: [
+              if (today.isEmpty)
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(8, 8, 8, 16),
+                  child: Row(
+                    children: [
+                      Icon(
+                        Icons.coffee_outlined,
+                        color: context.colors.textSecondary,
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(child: Text('今天没有课程', style: text.bodyMedium)),
+                    ],
                   ),
                 ),
-                title: Text(
-                  course.name,
-                  maxLines: 2,
-                  overflow: TextOverflow.ellipsis,
-                  style: const TextStyle(
-                    fontSize: 14,
-                    fontWeight: FontWeight.w600,
+              ...today.map((course) {
+                final scheme = ColorScheme.fromSeed(
+                  seedColor: Color(course.colorValue),
+                  brightness: Theme.of(context).brightness,
+                );
+                return Padding(
+                  padding: const EdgeInsets.only(bottom: 8),
+                  child: Material(
+                    color: context.colors.surfaceContainer,
+                    borderRadius: BorderRadius.circular(16),
+                    clipBehavior: Clip.antiAlias,
+                    child: InkWell(
+                      onTap: () => onCourseTap(course),
+                      child: Padding(
+                        padding: const EdgeInsets.all(14),
+                        child: Row(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Container(
+                              width: 3,
+                              height: 46,
+                              decoration: BoxDecoration(
+                                color: scheme.primary,
+                                borderRadius: BorderRadius.circular(4),
+                              ),
+                            ),
+                            const SizedBox(width: 12),
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    Schedule.sectionStartTimeAt(
+                                      sectionStartTimes,
+                                      course.startSection,
+                                    ),
+                                    style: text.labelMedium?.copyWith(
+                                      color: scheme.primary,
+                                    ),
+                                  ),
+                                  const SizedBox(height: 4),
+                                  Text(
+                                    course.name,
+                                    style: text.titleSmall,
+                                    maxLines: 2,
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
+                                  if (course.location.isNotEmpty) ...[
+                                    const SizedBox(height: 4),
+                                    Text(
+                                      course.location,
+                                      style: text.bodySmall,
+                                      maxLines: 1,
+                                      overflow: TextOverflow.ellipsis,
+                                    ),
+                                  ],
+                                ],
+                              ),
+                            ),
+                            Icon(
+                              Icons.chevron_right_rounded,
+                              size: 18,
+                              color: context.colors.textSecondary,
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
                   ),
-                ),
-                subtitle: Text(
-                  '${Schedule.sectionStartTimeAt(sectionStartTimes, course.startSection)}${course.location.isEmpty ? '' : ' · ${course.location}'}',
-                  style: const TextStyle(fontSize: 12),
-                ),
-              ),
-            ),
+                );
+              }),
+            ],
           ),
         ),
         const SizedBox(height: 16),
@@ -160,4 +191,22 @@ class DayOverview extends StatelessWidget {
       ],
     );
   }
+}
+
+class _Metric extends StatelessWidget {
+  const _Metric({required this.value, required this.label});
+  final String value;
+  final String label;
+  @override
+  Widget build(BuildContext context) => Column(
+    crossAxisAlignment: CrossAxisAlignment.start,
+    children: [
+      Text(
+        value,
+        style: const TextStyle(fontSize: 24, fontWeight: FontWeight.w600),
+      ),
+      const SizedBox(height: 4),
+      Text(label, style: const TextStyle(fontSize: 12)),
+    ],
+  );
 }

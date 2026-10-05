@@ -1,12 +1,12 @@
 # Day Schedule
 
-[![release](https://img.shields.io/badge/release-v1.2.0-0d8bdc?style=flat-square)](CHANGELOG.md#v120) [![Flutter](https://img.shields.io/badge/Flutter-3.41.9-02569B?logo=flutter&logoColor=white&style=flat-square)](.github/workflows/ci.yml) [![license](https://img.shields.io/badge/license-PolyForm_Noncommercial_1.0.0-f47c20?style=flat-square)](LICENSE) [![Android](https://img.shields.io/badge/Android-supported-3ddc84?logo=android&logoColor=white&style=flat-square)](#)
+[![release](https://img.shields.io/badge/release-v1.2.1-0d8bdc?style=flat-square)](CHANGELOG.md#v121) [![Flutter](https://img.shields.io/badge/Flutter-3.41.9-02569B?logo=flutter&logoColor=white&style=flat-square)](.github/workflows/ci.yml) [![license](https://img.shields.io/badge/license-PolyForm_Noncommercial_1.0.0-f47c20?style=flat-square)](LICENSE) [![Android](https://img.shields.io/badge/Android-supported-3ddc84?logo=android&logoColor=white&style=flat-square)](#)
 
-> 升级说明：v1.2.0 沿用 v1.1.5 的应用标识与数据格式，使用相同正式签名可覆盖升级。
+> 升级说明：v1.2.1 沿用 v1.1.5 的应用标识与数据格式，使用相同正式签名可覆盖升级。
 
 一个用 Flutter 制作的课程表应用，主要面向大学课表这种按周、按节次排课的场景。现在重点支持 Android。
 
-当前版本：`v1.2.0`
+当前版本：`v1.2.1`
 
 ## 运行方式
 
@@ -112,6 +112,11 @@ android/app/src/main/res/xml/schedule_widget_info.xml
 
 > 完整更新记录见 [CHANGELOG.md](CHANGELOG.md)。
 
+### v1.2.1
+
+- 优化了新UI的视觉体验
+- 修复了已知问题
+
 ### v1.2.0
 
 - 对UI进行了重新设计
@@ -184,3 +189,29 @@ android/app/src/main/res/xml/schedule_widget_info.xml
 2. 长按桌面空白处。
 3. 进入“小组件”或“插件”列表。
 4. 找到 Day Schedule，把课程表小组件添加到桌面。
+
+## 界面设计与验证
+
+- 基于 Material 3，默认跟随系统深浅模式。全局主题在 `lib/app.dart`，语义颜色映射在 `lib/utils/app_colors.dart`。
+- `AppSectionCard` 统一表单与设置分组；`AppChoiceButton` 统一选择状态、焦点和点击反馈；`SheetHeading` 统一弹层标题与关闭入口。
+- 手机优先显示课表；宽屏提供侧边导航、今日概览。课程编辑在 840 logical px 起使用双栏，最大内容宽度为 1120。
+- 课程颜色从已有数据生成明暗色调，不修改存储的课程数据。短卡片优先显示课程名。
+- 页面尊重减少动画设置；设置页固定保存操作，长弹层可滚动。
+- `test/design_system_test.dart` 覆盖文字对比度、系统深色模式、320px 窄屏放大文字，以及 30 周横屏选择面板。
+
+视觉预览使用独立的内存数据入口，不写入实际课表：
+
+```bash
+flutter run -d chrome -t lib/preview.dart
+```
+
+Web 预览 URL 可附加 `?theme=dark` 或 `?theme=light` 检查外观。生产入口仍为 `lib/main.dart`。
+
+验证命令：
+
+```bash
+dart format --output=none --set-exit-if-changed lib test
+flutter analyze
+flutter test
+flutter build apk --debug
+```

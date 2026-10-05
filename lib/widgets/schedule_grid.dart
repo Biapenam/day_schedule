@@ -86,7 +86,6 @@ class _ScheduleGridState extends State<ScheduleGrid> {
   void _showCourseDetail(Course course) {
     showAppModalSheet(
       context,
-      backgroundColor: Colors.transparent,
       builder: (_) => CourseDetailSheet(
         course: course,
         onDeleted: widget.onCourseDeleted,
@@ -196,18 +195,28 @@ class _ScheduleGridState extends State<ScheduleGrid> {
           child: SizedBox(
             width: gridWidth,
             child: Container(
-              margin: const EdgeInsets.symmetric(horizontal: 12),
+              margin: EdgeInsets.symmetric(
+                horizontal: MediaQuery.sizeOf(context).width < 600 ? 0 : 4,
+              ),
               decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(28),
+                color: context.colors.surface,
+                border: Border.all(
+                  color: context.colors.borderLight.withValues(alpha: 0.65),
+                ),
+                borderRadius: BorderRadius.circular(20),
               ),
               child: ClipRRect(
-                borderRadius: BorderRadius.circular(28),
+                borderRadius: BorderRadius.circular(20),
                 child: Column(
                   children: [
                     _buildHeader(todayWeekday, weekMonday, visibleDays),
                     Expanded(
                       child: SingleChildScrollView(
+                        padding: EdgeInsets.only(
+                          bottom: MediaQuery.sizeOf(context).width < 1000
+                              ? 88
+                              : 12,
+                        ),
                         child: _buildBody(
                           todayWeekday,
                           visibleDays,
@@ -231,7 +240,7 @@ class _ScheduleGridState extends State<ScheduleGrid> {
     const dayChars = ['', '一', '二', '三', '四', '五', '六', '日'];
     final compact = MediaQuery.sizeOf(context).width < 600;
     return Container(
-      color: AppColors.surfaceContainer,
+      color: context.colors.surface,
       padding: EdgeInsets.symmetric(vertical: compact ? 6 : 12),
       child: Row(
         children: [
@@ -240,9 +249,9 @@ class _ScheduleGridState extends State<ScheduleGrid> {
             child: Text(
               '${weekMonday.month}月',
               textAlign: TextAlign.center,
-              style: const TextStyle(
+              style: TextStyle(
                 fontSize: 11,
-                color: AppColors.textSecondary,
+                color: context.colors.textSecondary,
               ),
             ),
           ),
@@ -256,9 +265,9 @@ class _ScheduleGridState extends State<ScheduleGrid> {
                     children: [
                       Text(
                         '周${dayChars[day]}',
-                        style: const TextStyle(
+                        style: TextStyle(
                           fontSize: 11,
-                          color: AppColors.textSecondary,
+                          color: context.colors.textSecondary,
                         ),
                       ),
                       SizedBox(height: compact ? 2 : 6),
@@ -267,7 +276,7 @@ class _ScheduleGridState extends State<ScheduleGrid> {
                         height: compact ? 28 : 32,
                         decoration: BoxDecoration(
                           color: isToday
-                              ? AppColors.primary
+                              ? context.colors.primary
                               : Colors.transparent,
                           shape: BoxShape.circle,
                         ),
@@ -278,8 +287,8 @@ class _ScheduleGridState extends State<ScheduleGrid> {
                             fontSize: 16,
                             fontWeight: FontWeight.w600,
                             color: isToday
-                                ? Colors.white
-                                : AppColors.textPrimary,
+                                ? context.colors.onPrimary
+                                : context.colors.textPrimary,
                           ),
                         ),
                       ),
@@ -316,10 +325,12 @@ class _ScheduleGridState extends State<ScheduleGrid> {
                 final section = i + 1;
                 return Container(
                   height: _cellHeight,
-                  decoration: const BoxDecoration(
+                  decoration: BoxDecoration(
                     border: Border(
                       bottom: BorderSide(
-                        color: AppColors.borderLight,
+                        color: context.colors.borderLight.withValues(
+                          alpha: 0.5,
+                        ),
                         width: 1,
                       ),
                     ),
@@ -335,21 +346,23 @@ class _ScheduleGridState extends State<ScheduleGrid> {
                           style: TextStyle(
                             fontSize: 10,
                             fontWeight: FontWeight.w700,
-                            color: AppColors.primary.withValues(alpha: 0.6),
+                            color: context.colors.primary.withValues(
+                              alpha: 0.6,
+                            ),
                           ),
                         ),
                         Text(
                           _getStartTime(section),
-                          style: const TextStyle(
+                          style: TextStyle(
                             fontSize: 8,
-                            color: AppColors.textSecondary,
+                            color: context.colors.textSecondary,
                           ),
                         ),
                         Text(
                           _getEndTime(section),
-                          style: const TextStyle(
+                          style: TextStyle(
                             fontSize: 7,
-                            color: AppColors.textSecondary,
+                            color: context.colors.textSecondary,
                           ),
                         ),
                       ],
@@ -397,13 +410,19 @@ class _ScheduleGridState extends State<ScheduleGrid> {
                 height: _cellHeight,
                 decoration: BoxDecoration(
                   color: isToday
-                      ? AppColors.primary.withValues(alpha: 0.04)
+                      ? context.colors.primary.withValues(alpha: 0.04)
                       : isWeekend
                       ? const Color(0xFF000000).withValues(alpha: 0.01)
                       : Colors.transparent,
-                  border: const Border(
-                    bottom: BorderSide(color: AppColors.borderLight, width: 1),
-                    right: BorderSide(color: AppColors.borderLight, width: 0.5),
+                  border: Border(
+                    bottom: BorderSide(
+                      color: context.colors.borderLight.withValues(alpha: 0.5),
+                      width: 1,
+                    ),
+                    right: BorderSide(
+                      color: context.colors.borderLight.withValues(alpha: 0.5),
+                      width: 0.5,
+                    ),
                   ),
                 ),
               ),
@@ -473,9 +492,12 @@ class _CourseBlock extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final colors = ColorScheme.fromSeed(seedColor: Color(course.colorValue));
+    final colors = ColorScheme.fromSeed(
+      seedColor: Color(course.colorValue),
+      brightness: Theme.of(context).brightness,
+    );
     final foreground = isNonCurrentWeek
-        ? AppColors.textSecondary
+        ? context.colors.textSecondary
         : colors.onPrimaryContainer;
     return Semantics(
       button: true,
@@ -483,8 +505,11 @@ class _CourseBlock extends StatelessWidget {
           '${course.name}，${course.location}，第${course.startSection}至${course.endSection}节${isNonCurrentWeek ? '，非本周' : ''}',
       child: Material(
         color: isNonCurrentWeek
-            ? AppColors.surfaceContainer
-            : colors.primaryContainer,
+            ? context.colors.surfaceContainer
+            : Color.alphaBlend(
+                colors.primaryContainer.withValues(alpha: 0.6),
+                context.colors.surface,
+              ),
         borderRadius: BorderRadius.circular(14),
         clipBehavior: Clip.antiAlias,
         child: InkWell(
@@ -571,11 +596,13 @@ class _CourseBlock extends StatelessWidget {
                 var remaining = nameBudget - nameHeight;
                 final nameFits = nameLines >= lines.length;
                 final showLocation =
+                    (!compact || course.endSection > course.startSection) &&
                     nameFits &&
                     course.location.isNotEmpty &&
                     remaining >= 5 + locationPainter.height;
                 if (showLocation) remaining -= 5 + locationPainter.height;
                 final showTeacher =
+                    (!compact || course.endSection > course.startSection) &&
                     nameFits &&
                     course.teacher.isNotEmpty &&
                     remaining >= 3 + teacherPainter.height;
@@ -594,7 +621,7 @@ class _CourseBlock extends StatelessWidget {
                         height: 3,
                         decoration: BoxDecoration(
                           color: isNonCurrentWeek
-                              ? AppColors.textSecondary
+                              ? context.colors.textSecondary
                               : colors.primary,
                           borderRadius: BorderRadius.circular(2),
                         ),

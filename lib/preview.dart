@@ -49,5 +49,11 @@ Future<void> main() async {
       ),
     );
   }
-  runApp(const DayScheduleApp());
+  // Optional preview-only appearance override; production follows the system.
+  final themeMode = switch (Uri.base.queryParameters['theme']) {
+    'dark' => ThemeMode.dark,
+    'light' => ThemeMode.light,
+    _ => ThemeMode.system,
+  };
+  runApp(DayScheduleApp(themeMode: themeMode));
 }

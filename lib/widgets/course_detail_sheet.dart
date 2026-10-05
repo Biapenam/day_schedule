@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_animate/flutter_animate.dart';
 import '../models/course.dart';
 import '../models/schedule.dart';
 import '../services/course_service.dart';
 import '../screens/add_course_screen.dart';
 import '../utils/app_colors.dart';
+import 'app_components.dart';
 
 class CourseDetailSheet extends StatefulWidget {
   final Course course;
@@ -40,9 +40,11 @@ class _CourseDetailSheetState extends State<CourseDetailSheet> {
   @override
   Widget build(BuildContext context) {
     final course = widget.course;
-    final color = ColorScheme.fromSeed(
+    final courseScheme = ColorScheme.fromSeed(
       seedColor: Color(course.colorValue),
-    ).primary;
+      brightness: Theme.of(context).brightness,
+    );
+    final color = courseScheme.primary;
     final startTime = _getStartTime(course.startSection);
     final endTime = _getEndTime(course.endSection);
     final sections =
@@ -50,157 +52,151 @@ class _CourseDetailSheetState extends State<CourseDetailSheet> {
     final weeksText = _formatWeeks(course.weeks);
 
     return Container(
-      decoration: const BoxDecoration(
-        color: Colors.white,
+      decoration: BoxDecoration(
+        color: context.colors.surfaceContainer,
         borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
       ),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Padding(
-            padding: const EdgeInsets.only(top: 12),
-            child: Container(
-              width: 40,
-              height: 4,
-              decoration: BoxDecoration(
-                color: Colors.grey[300],
-                borderRadius: BorderRadius.circular(2),
+      child: SingleChildScrollView(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const Padding(
+              padding: EdgeInsets.symmetric(horizontal: 20),
+              child: SheetHeading(
+                title: '课程详情',
+                icon: Icons.menu_book_outlined,
               ),
             ),
-          ),
 
-          // 课程头部卡片
-          Container(
-            margin: const EdgeInsets.fromLTRB(20, 16, 20, 0),
-            padding: const EdgeInsets.all(20),
-            decoration: BoxDecoration(
-              color: color,
-              borderRadius: BorderRadius.circular(28),
-            ),
-            child: Row(
-              children: [
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        course.name,
-                        style: const TextStyle(
-                          color: Colors.white,
-                          fontSize: 22,
-                          fontWeight: FontWeight.w800,
-                        ),
-                      ),
-                      if (course.teacher.isNotEmpty) ...[
-                        const SizedBox(height: 6),
-                        Row(
-                          children: [
-                            const Icon(
-                              Icons.person_rounded,
-                              color: Colors.white70,
-                              size: 15,
-                            ),
-                            const SizedBox(width: 4),
-                            Text(
-                              course.teacher,
-                              style: const TextStyle(
-                                color: Colors.white70,
-                                fontSize: 14,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ],
-                    ],
-                  ),
-                ),
-                Container(
-                  width: 56,
-                  height: 56,
-                  decoration: BoxDecoration(
-                    color: Colors.white.withValues(alpha: 0.2),
-                    shape: BoxShape.circle,
-                  ),
-                  child: const Icon(
-                    Icons.book_rounded,
-                    color: Colors.white,
-                    size: 28,
-                  ),
-                ),
-              ],
-            ),
-          ).animate().scale(
-            begin: const Offset(0.9, 0.9),
-            duration: 350.ms,
-            curve: Curves.easeOutBack,
-          ),
-
-          // 详情信息
-          Padding(
-            padding: const EdgeInsets.fromLTRB(20, 16, 20, 8),
-            child:
-                Column(
+            // 课程头部卡片
+            Container(
+              margin: const EdgeInsets.fromLTRB(20, 16, 20, 0),
+              padding: const EdgeInsets.all(20),
+              decoration: BoxDecoration(
+                color: courseScheme.primaryContainer,
+                borderRadius: BorderRadius.circular(28),
+              ),
+              child: Row(
+                children: [
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        _InfoRow(
-                          icon: Icons.access_time_rounded,
-                          color: color,
-                          label: '上课时间',
-                          value: '${dayNames[course.dayOfWeek]}  $sections',
-                        ),
-                        const SizedBox(height: 12),
-                        if (course.location.isNotEmpty) ...[
-                          _InfoRow(
-                            icon: Icons.location_on_rounded,
-                            color: color,
-                            label: '上课地点',
-                            value: course.location,
+                        Text(
+                          course.name,
+                          style: TextStyle(
+                            color: courseScheme.onPrimaryContainer,
+                            fontSize: 22,
+                            fontWeight: FontWeight.w600,
                           ),
-                          const SizedBox(height: 12),
-                        ],
-                        _InfoRow(
-                          icon: Icons.calendar_month_rounded,
-                          color: color,
-                          label: '上课周次',
-                          value: weeksText,
                         ),
+                        if (course.teacher.isNotEmpty) ...[
+                          const SizedBox(height: 6),
+                          Row(
+                            children: [
+                              Icon(
+                                Icons.person_rounded,
+                                color: courseScheme.onPrimaryContainer,
+                                size: 15,
+                              ),
+                              const SizedBox(width: 4),
+                              Expanded(
+                                child: Text(
+                                  course.teacher,
+                                  style: TextStyle(
+                                    color: courseScheme.onPrimaryContainer,
+                                    fontSize: 14,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ],
                       ],
-                    )
-                    .animate()
-                    .fadeIn(delay: 150.ms, duration: 350.ms)
-                    .slideY(begin: 0.15),
-          ),
-
-          // 操作按钮
-          Padding(
-            padding: EdgeInsets.fromLTRB(
-              20,
-              8,
-              20,
-              MediaQuery.of(context).padding.bottom + 16,
+                    ),
+                  ),
+                  Container(
+                    width: 56,
+                    height: 56,
+                    decoration: BoxDecoration(
+                      color: courseScheme.onPrimaryContainer.withValues(
+                        alpha: 0.08,
+                      ),
+                      shape: BoxShape.circle,
+                    ),
+                    child: Icon(
+                      Icons.book_rounded,
+                      color: courseScheme.onPrimaryContainer,
+                      size: 28,
+                    ),
+                  ),
+                ],
+              ),
             ),
-            child: Row(
-              children: [
-                Expanded(
-                  child: _ActionButton(
-                    label: '编辑',
-                    icon: Icons.edit_rounded,
+
+            // 详情信息
+            Padding(
+              padding: const EdgeInsets.fromLTRB(20, 16, 20, 8),
+              child: Column(
+                children: [
+                  _InfoRow(
+                    icon: Icons.access_time_rounded,
                     color: color,
-                    onTap: () => _editCourse(context),
+                    label: '上课时间',
+                    value: '${dayNames[course.dayOfWeek]}  $sections',
                   ),
-                ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: _ActionButton(
-                    label: '删除',
-                    icon: Icons.delete_rounded,
-                    color: AppColors.secondary,
-                    onTap: () => _deleteCourse(context),
+                  const SizedBox(height: 12),
+                  if (course.location.isNotEmpty) ...[
+                    _InfoRow(
+                      icon: Icons.location_on_rounded,
+                      color: color,
+                      label: '上课地点',
+                      value: course.location,
+                    ),
+                    const SizedBox(height: 12),
+                  ],
+                  _InfoRow(
+                    icon: Icons.calendar_month_rounded,
+                    color: color,
+                    label: '上课周次',
+                    value: weeksText,
                   ),
-                ),
-              ],
-            ).animate().fadeIn(delay: 250.ms, duration: 350.ms),
-          ),
-        ],
+                ],
+              ),
+            ),
+
+            // 操作按钮
+            Padding(
+              padding: EdgeInsets.fromLTRB(
+                20,
+                8,
+                20,
+                MediaQuery.of(context).padding.bottom + 16,
+              ),
+              child: Row(
+                children: [
+                  Expanded(
+                    child: _ActionButton(
+                      label: '编辑',
+                      icon: Icons.edit_rounded,
+                      color: color,
+                      onTap: () => _editCourse(context),
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: _ActionButton(
+                      label: '删除',
+                      icon: Icons.delete_rounded,
+                      color: context.colors.error,
+                      onTap: () => _deleteCourse(context),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -237,7 +233,7 @@ class _CourseDetailSheetState extends State<CourseDetailSheet> {
           ),
           TextButton(
             onPressed: () => Navigator.pop(context, true),
-            style: TextButton.styleFrom(foregroundColor: Colors.red),
+            style: TextButton.styleFrom(foregroundColor: context.colors.error),
             child: const Text('删除'),
           ),
         ],
@@ -266,7 +262,9 @@ class _CourseDetailSheetState extends State<CourseDetailSheet> {
           ).animate(CurvedAnimation(parent: anim, curve: Curves.easeOutCubic)),
           child: child,
         ),
-        transitionDuration: 400.ms,
+        transitionDuration: MediaQuery.disableAnimationsOf(context)
+            ? Duration.zero
+            : const Duration(milliseconds: 250),
       ),
     );
     if (result == true) widget.onEdited();
@@ -307,18 +305,18 @@ class _InfoRow extends StatelessWidget {
             children: [
               Text(
                 label,
-                style: const TextStyle(
+                style: TextStyle(
                   fontSize: 11,
-                  color: AppColors.textSecondary,
+                  color: context.colors.textSecondary,
                   fontWeight: FontWeight.w500,
                 ),
               ),
               const SizedBox(height: 3),
               Text(
                 value,
-                style: const TextStyle(
+                style: TextStyle(
                   fontSize: 14,
-                  color: AppColors.textPrimary,
+                  color: context.colors.textPrimary,
                   fontWeight: FontWeight.w600,
                 ),
               ),
@@ -344,32 +342,10 @@ class _ActionButton extends StatelessWidget {
   });
 
   @override
-  Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: onTap,
-      child: Container(
-        padding: const EdgeInsets.symmetric(vertical: 14),
-        decoration: BoxDecoration(
-          color: color.withValues(alpha: 0.1),
-          borderRadius: BorderRadius.circular(14),
-          border: Border.all(color: color.withValues(alpha: 0.2)),
-        ),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(icon, color: color, size: 18),
-            const SizedBox(width: 6),
-            Text(
-              label,
-              style: TextStyle(
-                color: color,
-                fontSize: 14,
-                fontWeight: FontWeight.w700,
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
+  Widget build(BuildContext context) => OutlinedButton.icon(
+    onPressed: onTap,
+    style: OutlinedButton.styleFrom(foregroundColor: color),
+    icon: Icon(icon, size: 18),
+    label: Text(label),
+  );
 }
