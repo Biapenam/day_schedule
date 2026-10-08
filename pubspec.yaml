@@ -1,7 +1,7 @@
 name: day_schedule
 description: Day Schedule - 大学课程表应用
 publish_to: 'none'
-version: 1.2.1+15
+version: 1.2.2+16
 
 environment:
   sdk: '>=3.8.0 <4.0.0'

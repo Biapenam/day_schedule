@@ -7,6 +7,9 @@ import '../models/schedule.dart';
 import '../services/course_service.dart';
 
 class WidgetService {
+  static bool get supportsHomeWidgets =>
+      !kIsWeb && defaultTargetPlatform == TargetPlatform.android;
+
   // 必须和 AndroidManifest 中 receiver 的包名一致
   static const _widgetName = 'com.biapenam.day_schedule.ScheduleWidgetProvider';
   static const _platform = MethodChannel('day_schedule/widget');
@@ -15,14 +18,14 @@ class WidgetService {
 
   /// 初始化：设置 App Group ID（Android 上等同于包名）
   static Future<void> init() async {
-    if (kIsWeb || defaultTargetPlatform != TargetPlatform.android) return;
+    if (!supportsHomeWidgets) return;
     // Android 不需要 AppGroupId，仅 iOS 需要；这里保留调用以兼容
     await HomeWidget.setAppGroupId('com.biapenam.day_schedule');
   }
 
   /// 推送今日课程数据到桌面小组件
   Future<void> updateWidget() async {
-    if (kIsWeb || defaultTargetPlatform != TargetPlatform.android) return;
+    if (!supportsHomeWidgets) return;
     try {
       await _courseService.ensureMigrated();
       final schedule = await _courseService.getActiveSchedule();
@@ -125,6 +128,7 @@ class WidgetService {
   }
 
   Future<String> requestPinWidget() async {
+    if (!supportsHomeWidgets) return 'unsupported_platform';
     try {
       await updateWidget();
       return await _platform.invokeMethod<String>('requestPinWidget') ??

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:day_schedule/app.dart';
@@ -17,16 +18,16 @@ void main() {
           (call) async => true,
         );
   });
-  Future<void> seed() async {
+  Future<void> seed({bool longCourse = false}) async {
     SharedPreferences.setMockInitialValues({});
     final service = CourseService();
     await service.ensureMigrated();
     await service.addCourse(
       Course(
         id: 'sample',
-        name: '高等数学',
+        name: longCourse ? '废弃物能源资源化技术' : '高等数学',
         teacher: '陈老师',
-        location: '教学楼 A201',
+        location: longCourse ? '松江校区教学楼2101' : '教学楼 A201',
         colorValue: 0xFF356A51,
         weeks: [1],
         dayOfWeek: 7,
@@ -41,6 +42,26 @@ void main() {
     tester.view.devicePixelRatio = 1;
     addTearDown(tester.view.resetPhysicalSize);
     addTearDown(tester.view.resetDevicePixelRatio);
+  }
+
+  for (final width in [320.0, 390.0, 1024.0, 1280.0]) {
+    testWidgets(
+      'home seven-day layout preserves long course metadata at $width',
+      (tester) async {
+        size(tester, Size(width, width >= 1000 ? 768 : 844));
+        await seed(longCourse: true);
+        await tester.pumpWidget(const DayScheduleApp());
+        await tester.pumpAndSettle();
+        final grid = find.byType(ScheduleGrid);
+        for (final text in ['废弃物能源资源化技术', '松江校区教学楼2101', '陈老师']) {
+          final paragraph = tester.renderObject<RenderParagraph>(
+            find.descendant(of: grid, matching: find.text(text)),
+          );
+          expect(paragraph.didExceedMaxLines, isFalse, reason: text);
+        }
+        expect(tester.takeException(), isNull);
+      },
+    );
   }
 
   for (final width in [320.0, 390.0, 1280.0]) {

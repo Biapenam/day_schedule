@@ -7,6 +7,7 @@ import 'dart:math' as math;
 import '../utils/app_colors.dart';
 
 const double _cellHeight = 68.0;
+const double _denseCellHeight = 84.0;
 const double _sectionLabelWidth = 44.0;
 
 class ScheduleGrid extends StatefulWidget {
@@ -179,16 +180,22 @@ class _ScheduleGridState extends State<ScheduleGrid> {
 
     return LayoutBuilder(
       builder: (context, constraints) {
-        // 根据可用宽度与天数列数动态决定网格整体宽度：
-        // 单列过宽时（平板横屏 / 4:3 横屏）限制每列宽度并居中，
-        // 避免课程块被横向过度拉伸；手机端不受影响。
-        const labelAndGap = _sectionLabelWidth;
-        final availableForDays = constraints.maxWidth - labelAndGap;
+        // 平板限制最大列宽；窄屏七列使用紧凑排版和更高行高保留信息。
+        final denseSevenDays =
+            visibleDays == 7 &&
+            (constraints.maxWidth - _sectionLabelWidth) / visibleDays < 60;
+        final labelWidth = denseSevenDays ? 36.0 : _sectionLabelWidth;
+        final availableForDays = constraints.maxWidth - labelWidth;
         final dayWidth = availableForDays / visibleDays;
+        // Give wrapped metadata enough vertical room, including enlarged text.
+        final textScale = MediaQuery.textScalerOf(context).scale(10.5) / 10.5;
+        final cellHeight = denseSevenDays
+            ? _denseCellHeight * math.max(1.0, textScale)
+            : _cellHeight;
         // 目标单列最大宽度（px）。课程块内部已按列宽自适应字号。
         const targetMaxDayWidth = 180.0;
         final gridWidth = dayWidth > targetMaxDayWidth
-            ? labelAndGap + visibleDays * targetMaxDayWidth
+            ? labelWidth + visibleDays * targetMaxDayWidth
             : constraints.maxWidth;
 
         return Center(
@@ -209,7 +216,12 @@ class _ScheduleGridState extends State<ScheduleGrid> {
                 borderRadius: BorderRadius.circular(20),
                 child: Column(
                   children: [
-                    _buildHeader(todayWeekday, weekMonday, visibleDays),
+                    _buildHeader(
+                      todayWeekday,
+                      weekMonday,
+                      visibleDays,
+                      labelWidth,
+                    ),
                     Expanded(
                       child: SingleChildScrollView(
                         padding: EdgeInsets.only(
@@ -222,6 +234,9 @@ class _ScheduleGridState extends State<ScheduleGrid> {
                           visibleDays,
                           currentCoursesByDay,
                           otherCoursesByDay,
+                          labelWidth,
+                          cellHeight,
+                          denseSevenDays,
                         ),
                       ),
                     ),
@@ -236,7 +251,12 @@ class _ScheduleGridState extends State<ScheduleGrid> {
   }
 
   // ── 标题行 ─────────────────────────────────────────────────
-  Widget _buildHeader(int todayWeekday, DateTime weekMonday, int visibleDays) {
+  Widget _buildHeader(
+    int todayWeekday,
+    DateTime weekMonday,
+    int visibleDays,
+    double labelWidth,
+  ) {
     const dayChars = ['', '一', '二', '三', '四', '五', '六', '日'];
     final compact = MediaQuery.sizeOf(context).width < 600;
     return Container(
@@ -245,7 +265,7 @@ class _ScheduleGridState extends State<ScheduleGrid> {
       child: Row(
         children: [
           SizedBox(
-            width: _sectionLabelWidth,
+            width: labelWidth,
             child: Text(
               '${weekMonday.month}月',
               textAlign: TextAlign.center,
@@ -308,8 +328,11 @@ class _ScheduleGridState extends State<ScheduleGrid> {
     int visibleDays,
     Map<int, List<Course>> currentCoursesByDay,
     Map<int, List<Course>> otherCoursesByDay,
+    double labelWidth,
+    double cellHeight,
+    bool denseSevenDays,
   ) {
-    final totalHeight = _cellHeight * widget.dailySections;
+    final totalHeight = cellHeight * widget.dailySections;
 
     return SizedBox(
       height: totalHeight,
@@ -318,13 +341,13 @@ class _ScheduleGridState extends State<ScheduleGrid> {
         children: [
           // 节次标签列（固定宽度）
           SizedBox(
-            width: _sectionLabelWidth,
+            width: labelWidth,
             height: totalHeight,
             child: Column(
               children: List.generate(widget.dailySections, (i) {
                 final section = i + 1;
                 return Container(
-                  height: _cellHeight,
+                  height: cellHeight,
                   decoration: BoxDecoration(
                     border: Border(
                       bottom: BorderSide(
@@ -381,6 +404,8 @@ class _ScheduleGridState extends State<ScheduleGrid> {
                 totalHeight,
                 currentCoursesByDay[day] ?? [],
                 otherCoursesByDay[day] ?? [],
+                cellHeight,
+                denseSevenDays,
               ),
             ),
         ],
@@ -395,6 +420,8 @@ class _ScheduleGridState extends State<ScheduleGrid> {
     double totalHeight,
     List<Course> dayCourses,
     List<Course> dayOtherCourses,
+    double cellHeight,
+    bool denseSevenDays,
   ) {
     final isToday = widget.isCurrentWeek && day == todayWeekday;
     final isWeekend = day >= 6;
@@ -407,7 +434,7 @@ class _ScheduleGridState extends State<ScheduleGrid> {
             children: List.generate(
               widget.dailySections,
               (i) => Container(
-                height: _cellHeight,
+                height: cellHeight,
                 decoration: BoxDecoration(
                   color: isToday
                       ? context.colors.primary.withValues(alpha: 0.04)
@@ -431,20 +458,19 @@ class _ScheduleGridState extends State<ScheduleGrid> {
           // 非本周课程（空位虚化/变淡显示）
           for (final course in dayOtherCourses)
             Positioned(
-              top: (course.startSection - 1) * _cellHeight + 2,
-              left: 2,
-              right: 2,
+              top:
+                  (course.startSection - 1) * cellHeight +
+                  (denseSevenDays ? 1 : 2),
+              left: denseSevenDays ? 1 : 2,
+              right: denseSevenDays ? 1 : 2,
               height:
-                  (course.endSection - course.startSection + 1) * _cellHeight -
-                  4,
+                  (course.endSection - course.startSection + 1) * cellHeight -
+                  (denseSevenDays ? 2 : 4),
               child: RepaintBoundary(
                 child: _CourseBlock(
                   course: course,
                   isNonCurrentWeek: true,
-                  blockHeight:
-                      (course.endSection - course.startSection + 1) *
-                          _cellHeight -
-                      4,
+                  dense: denseSevenDays,
                   onTap: () => _showCourseDetail(course),
                 ),
               ),
@@ -452,20 +478,19 @@ class _ScheduleGridState extends State<ScheduleGrid> {
           // 本周正式课程（绝对定位）
           for (final course in dayCourses)
             Positioned(
-              top: (course.startSection - 1) * _cellHeight + 2,
-              left: 2,
-              right: 2,
+              top:
+                  (course.startSection - 1) * cellHeight +
+                  (denseSevenDays ? 1 : 2),
+              left: denseSevenDays ? 1 : 2,
+              right: denseSevenDays ? 1 : 2,
               height:
-                  (course.endSection - course.startSection + 1) * _cellHeight -
-                  4,
+                  (course.endSection - course.startSection + 1) * cellHeight -
+                  (denseSevenDays ? 2 : 4),
               child: RepaintBoundary(
                 child: _CourseBlock(
                   course: course,
                   isNonCurrentWeek: false,
-                  blockHeight:
-                      (course.endSection - course.startSection + 1) *
-                          _cellHeight -
-                      4,
+                  dense: denseSevenDays,
                   onTap: () => _showCourseDetail(course),
                 ),
               ),
@@ -479,13 +504,13 @@ class _ScheduleGridState extends State<ScheduleGrid> {
 // ── 课程块（独立 StatelessWidget，用 LayoutBuilder 获取实际宽度）──
 class _CourseBlock extends StatelessWidget {
   final Course course;
-  final double blockHeight;
+  final bool dense;
   final VoidCallback onTap;
   final bool isNonCurrentWeek;
 
   const _CourseBlock({
     required this.course,
-    required this.blockHeight,
+    this.dense = false,
     required this.onTap,
     this.isNonCurrentWeek = false,
   });
@@ -502,7 +527,7 @@ class _CourseBlock extends StatelessWidget {
     return Semantics(
       button: true,
       label:
-          '${course.name}，${course.location}，第${course.startSection}至${course.endSection}节${isNonCurrentWeek ? '，非本周' : ''}',
+          '${course.name}，${course.location}，${course.teacher}，第${course.startSection}至${course.endSection}节${isNonCurrentWeek ? '，非本周' : ''}',
       child: Material(
         color: isNonCurrentWeek
             ? context.colors.surfaceContainer
@@ -510,7 +535,7 @@ class _CourseBlock extends StatelessWidget {
                 colors.primaryContainer.withValues(alpha: 0.6),
                 context.colors.surface,
               ),
-        borderRadius: BorderRadius.circular(14),
+        borderRadius: BorderRadius.circular(dense ? 8 : 14),
         clipBehavior: Clip.antiAlias,
         child: InkWell(
           onTap: onTap,
@@ -521,91 +546,139 @@ class _CourseBlock extends StatelessWidget {
             builder: (context, _) => LayoutBuilder(
               builder: (context, constraints) {
                 final compact = constraints.maxWidth < 65;
-                final padding = compact ? 5.0 : 9.0;
+                final narrow = constraints.maxWidth < 96;
+                final padding = dense
+                    ? 3.0
+                    : compact
+                    ? 5.0
+                    : narrow
+                    ? 6.0
+                    : 9.0;
+                final markerGap = dense ? 3.0 : 5.0;
                 final textWidth = math.max(
                   1.0,
                   constraints.maxWidth - padding * 2,
                 );
                 final availableHeight = math.max(
                   0.0,
-                  constraints.maxHeight - padding * 2 - 8,
+                  constraints.maxHeight - padding * 2 - 3 - markerGap - 1,
                 );
                 final name =
                     '${course.name}${isNonCurrentWeek ? ' (非本周)' : ''}';
                 final baseStyle = DefaultTextStyle.of(context).style;
                 final nameStyle = baseStyle.copyWith(
-                  fontSize: compact ? 11 : 13,
+                  fontSize: dense
+                      ? 10.5
+                      : compact
+                      ? 11
+                      : narrow
+                      ? 12
+                      : 13,
                   fontWeight: FontWeight.w600,
                   color: foreground,
-                  height: 1.3,
+                  height: dense ? 1.2 : 1.3,
+                  letterSpacing: 0,
                 );
                 final infoStyle = baseStyle.copyWith(
-                  fontSize: compact ? 9 : 11,
-                  height: 1.3,
+                  fontSize: compact ? 9 : (narrow ? 10 : 11),
+                  height: dense ? 1.25 : 1.3,
                   color: foreground,
+                  letterSpacing: 0,
                 );
                 final weekStyle = infoStyle.copyWith(
                   fontSize: compact ? 8 : 10,
                 );
-                final teacherStyle = infoStyle.copyWith(fontSize: 10);
+                final teacherStyle = infoStyle.copyWith(
+                  fontSize: dense ? 9 : 10,
+                );
                 final weekLabel =
                     '[${Course.formatWeeksSummary(course.weeks)}]';
 
-                // Measure actual wrapping, including the system text scale. Course
-                // names get the available height first; metadata uses what is left.
-                TextPainter measure(
-                  String text,
-                  TextStyle style, {
-                  int? maxLines,
-                }) => TextPainter(
-                  text: TextSpan(text: text, style: style),
-                  textDirection: Directionality.of(context),
-                  textScaler: MediaQuery.textScalerOf(context),
-                  maxLines: maxLines,
-                )..layout(maxWidth: textWidth);
+                // Measure the full wrapped text. Metadata is no longer forced
+                // into one line when there is free height in the course block.
+                TextPainter measure(String text, TextStyle style) =>
+                    TextPainter(
+                      text: TextSpan(text: text, style: style),
+                      textDirection: Directionality.of(context),
+                      textScaler: MediaQuery.textScalerOf(context),
+                    )..layout(maxWidth: textWidth);
 
                 final namePainter = measure(name, nameStyle);
-                final weekPainter = measure(weekLabel, weekStyle, maxLines: 1);
-                final locationPainter = measure(
-                  course.location,
-                  infoStyle,
-                  maxLines: 1,
-                );
-                final teacherPainter = measure(
-                  course.teacher,
-                  teacherStyle,
-                  maxLines: 1,
-                );
-                final lines = namePainter.computeLineMetrics();
-                final firstLineHeight = lines.isEmpty
-                    ? 0.0
-                    : lines.first.height;
+                final weekPainter = measure(weekLabel, weekStyle);
+                final locationPainter = measure(course.location, infoStyle);
+                final teacherPainter = measure(course.teacher, teacherStyle);
+                double heightFor(TextPainter painter, int count) {
+                  final lines = painter.computeLineMetrics();
+                  if (count >= lines.length) {
+                    return painter.height.ceilToDouble();
+                  }
+                  return lines
+                      .take(count)
+                      .fold<double>(0, (sum, line) => sum + line.height)
+                      .ceilToDouble();
+                }
+
+                int fitLines(TextPainter painter, double budget) {
+                  final lines = painter.computeLineMetrics();
+                  var count = 0;
+                  for (var i = 1; i <= lines.length; i++) {
+                    if (heightFor(painter, i) > budget) break;
+                    count = i;
+                  }
+                  return count;
+                }
+
                 final showWeeks =
                     isNonCurrentWeek &&
-                    availableHeight >= firstLineHeight + 3 + weekPainter.height;
-                final nameBudget =
-                    availableHeight - (showWeeks ? 3 + weekPainter.height : 0);
-                var nameLines = 0;
-                var nameHeight = 0.0;
-                for (final line in lines) {
-                  if (nameHeight + line.height > nameBudget) break;
-                  nameHeight += line.height;
-                  nameLines++;
+                    availableHeight >=
+                        heightFor(namePainter, 1) +
+                            3 +
+                            heightFor(weekPainter, 1);
+                final weekHeight = showWeeks
+                    ? heightFor(weekPainter, 1) + 3
+                    : 0.0;
+                final nameBudget = availableHeight - weekHeight;
+                final nameLines = math.max(
+                  1,
+                  fitLines(namePainter, nameBudget),
+                );
+                final nameFits =
+                    nameLines >= namePainter.computeLineMetrics().length;
+                var remaining = nameBudget - heightFor(namePainter, nameLines);
+                final showMetadata =
+                    nameFits &&
+                    (!compact || course.endSection > course.startSection);
+                // Reserve a line for the teacher when possible, then allow the
+                // location to wrap. Course names retain the first claim on space.
+                final teacherReserve =
+                    showMetadata &&
+                        course.teacher.isNotEmpty &&
+                        remaining >= heightFor(teacherPainter, 1) + 3
+                    ? heightFor(teacherPainter, 1) + 3
+                    : 0.0;
+                final locationGap = dense ? 4.0 : 5.0;
+                var locationLines = 0;
+                if (showMetadata && course.location.isNotEmpty) {
+                  locationLines = fitLines(
+                    locationPainter,
+                    remaining - locationGap - teacherReserve,
+                  );
+                  // If reserving the teacher hides the location entirely, the
+                  // classroom takes priority.
+                  if (locationLines == 0) {
+                    locationLines = fitLines(
+                      locationPainter,
+                      remaining - locationGap,
+                    );
+                  }
                 }
-                nameLines = math.max(1, nameLines);
-                var remaining = nameBudget - nameHeight;
-                final nameFits = nameLines >= lines.length;
-                final showLocation =
-                    (!compact || course.endSection > course.startSection) &&
-                    nameFits &&
-                    course.location.isNotEmpty &&
-                    remaining >= 5 + locationPainter.height;
-                if (showLocation) remaining -= 5 + locationPainter.height;
-                final showTeacher =
-                    (!compact || course.endSection > course.startSection) &&
-                    nameFits &&
-                    course.teacher.isNotEmpty &&
-                    remaining >= 3 + teacherPainter.height;
+                if (locationLines > 0) {
+                  remaining -=
+                      locationGap + heightFor(locationPainter, locationLines);
+                }
+                final teacherLines = showMetadata && course.teacher.isNotEmpty
+                    ? fitLines(teacherPainter, remaining - 3)
+                    : 0;
                 namePainter.dispose();
                 weekPainter.dispose();
                 locationPainter.dispose();
@@ -626,7 +699,7 @@ class _CourseBlock extends StatelessWidget {
                           borderRadius: BorderRadius.circular(2),
                         ),
                       ),
-                      const SizedBox(height: 5),
+                      SizedBox(height: markerGap),
                       Flexible(
                         child: Text(
                           name,
@@ -644,20 +717,20 @@ class _CourseBlock extends StatelessWidget {
                           style: weekStyle,
                         ),
                       ],
-                      if (showLocation) ...[
-                        const SizedBox(height: 5),
+                      if (locationLines > 0) ...[
+                        SizedBox(height: locationGap),
                         Text(
                           course.location,
-                          maxLines: 1,
+                          maxLines: locationLines,
                           overflow: TextOverflow.ellipsis,
                           style: infoStyle,
                         ),
                       ],
-                      if (showTeacher) ...[
+                      if (teacherLines > 0) ...[
                         const SizedBox(height: 3),
                         Text(
                           course.teacher,
-                          maxLines: 1,
+                          maxLines: teacherLines,
                           overflow: TextOverflow.ellipsis,
                           style: teacherStyle,
                         ),

@@ -89,7 +89,7 @@ class DayOverview extends StatelessWidget {
         const SizedBox(height: 20),
         AppSectionCard(
           title: '今日安排',
-          subtitle: today.isEmpty ? '留一点时间，给自己' : '按上课时间排序',
+          subtitle: today.isEmpty ? null : '按上课时间排序',
           padding: const EdgeInsets.fromLTRB(12, 0, 12, 12),
           child: Column(
             children: [

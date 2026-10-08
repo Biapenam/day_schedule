@@ -174,8 +174,14 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 padding: const EdgeInsets.all(20),
                 children: const [
                   _ChangelogEntry(
-                    version: 'v1.2.1',
+                    version: 'v1.2.2',
                     isLatest: true,
+                    changes: ['优化了新UI的视觉体验', '修复了已知问题'],
+                  ),
+                  SizedBox(height: 16),
+                  _ChangelogEntry(
+                    version: 'v1.2.1',
+                    isLatest: false,
                     changes: ['优化了新UI的视觉体验', '修复了已知问题'],
                   ),
                   SizedBox(height: 16),
@@ -526,69 +532,70 @@ class _SettingsScreenState extends State<SettingsScreen> {
                       ],
                     ),
 
-                    const SizedBox(height: 16),
-
-                    _buildCard(
-                      title: '桌面小卡片',
-                      icon: Icons.widgets_rounded,
-                      children: [
-                        ListTile(
-                          leading: _iconBox(Icons.add_to_home_screen_rounded),
-                          title: Text(
-                            '添加桌面小卡片',
-                            style: TextStyle(
-                              fontSize: 14,
-                              fontWeight: FontWeight.w600,
-                              color: context.colors.textPrimary,
+                    if (WidgetService.supportsHomeWidgets) ...[
+                      const SizedBox(height: 16),
+                      _buildCard(
+                        title: '桌面小卡片',
+                        icon: Icons.widgets_rounded,
+                        children: [
+                          ListTile(
+                            leading: _iconBox(Icons.add_to_home_screen_rounded),
+                            title: Text(
+                              '添加桌面小卡片',
+                              style: TextStyle(
+                                fontSize: 14,
+                                fontWeight: FontWeight.w600,
+                                color: context.colors.textPrimary,
+                              ),
                             ),
-                          ),
-                          subtitle: Text(
-                            '在桌面显示今天的课程',
-                            style: TextStyle(
-                              fontSize: 12,
-                              color: context.colors.textSecondary,
+                            subtitle: Text(
+                              '在桌面显示今天的课程',
+                              style: TextStyle(
+                                fontSize: 12,
+                                color: context.colors.textSecondary,
+                              ),
                             ),
-                          ),
-                          trailing: _addingWidget
-                              ? const SizedBox(
-                                  width: 20,
-                                  height: 20,
-                                  child: CircularProgressIndicator(
-                                    strokeWidth: 2,
+                            trailing: _addingWidget
+                                ? const SizedBox(
+                                    width: 20,
+                                    height: 20,
+                                    child: CircularProgressIndicator(
+                                      strokeWidth: 2,
+                                    ),
+                                  )
+                                : Icon(
+                                    Icons.chevron_right_rounded,
+                                    color: context.colors.textSecondary,
                                   ),
-                                )
-                              : Icon(
-                                  Icons.chevron_right_rounded,
-                                  color: context.colors.textSecondary,
-                                ),
-                          onTap: _addingWidget ? null : _requestPinWidget,
-                        ),
-                        const Divider(height: 1),
-                        ListTile(
-                          leading: _iconBox(Icons.help_outline_rounded),
-                          title: Text(
-                            '如何手动添加',
-                            style: TextStyle(
-                              fontSize: 14,
-                              fontWeight: FontWeight.w600,
-                              color: context.colors.textPrimary,
-                            ),
+                            onTap: _addingWidget ? null : _requestPinWidget,
                           ),
-                          subtitle: Text(
-                            '适用于系统没有弹出添加确认时',
-                            style: TextStyle(
-                              fontSize: 12,
+                          const Divider(height: 1),
+                          ListTile(
+                            leading: _iconBox(Icons.help_outline_rounded),
+                            title: Text(
+                              '如何手动添加',
+                              style: TextStyle(
+                                fontSize: 14,
+                                fontWeight: FontWeight.w600,
+                                color: context.colors.textPrimary,
+                              ),
+                            ),
+                            subtitle: Text(
+                              '适用于系统没有弹出添加确认时',
+                              style: TextStyle(
+                                fontSize: 12,
+                                color: context.colors.textSecondary,
+                              ),
+                            ),
+                            trailing: Icon(
+                              Icons.chevron_right_rounded,
                               color: context.colors.textSecondary,
                             ),
+                            onTap: _showManualWidgetGuide,
                           ),
-                          trailing: Icon(
-                            Icons.chevron_right_rounded,
-                            color: context.colors.textSecondary,
-                          ),
-                          onTap: _showManualWidgetGuide,
-                        ),
-                      ],
-                    ),
+                        ],
+                      ),
+                    ],
 
                     const SizedBox(height: 16),
 
@@ -599,7 +606,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                       children: [
                         _buildInfoTile('应用名称', 'Day Schedule'),
                         const Divider(height: 1),
-                        _buildInfoTile('版本', '1.2.1'),
+                        _buildInfoTile('版本', '1.2.2'),
                         const Divider(height: 1),
                         _buildInfoTile('开发者', 'Sora'),
                         const Divider(height: 1),

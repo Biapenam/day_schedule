@@ -1,12 +1,12 @@
 # Day Schedule
 
-[![release](https://img.shields.io/badge/release-v1.2.1-0d8bdc?style=flat-square)](CHANGELOG.md#v121) [![Flutter](https://img.shields.io/badge/Flutter-3.41.9-02569B?logo=flutter&logoColor=white&style=flat-square)](.github/workflows/ci.yml) [![license](https://img.shields.io/badge/license-PolyForm_Noncommercial_1.0.0-f47c20?style=flat-square)](LICENSE) [![Android](https://img.shields.io/badge/Android-supported-3ddc84?logo=android&logoColor=white&style=flat-square)](#)
+[![release](https://img.shields.io/badge/release-v1.2.2-0d8bdc?style=flat-square)](CHANGELOG.md#v122) [![Flutter](https://img.shields.io/badge/Flutter-3.41.9-02569B?logo=flutter&logoColor=white&style=flat-square)](.github/workflows/ci.yml) [![license](https://img.shields.io/badge/license-PolyForm_Noncommercial_1.0.0-f47c20?style=flat-square)](LICENSE) [![Android](https://img.shields.io/badge/Android-supported-3ddc84?logo=android&logoColor=white&style=flat-square)](#)
 
-> 升级说明：v1.2.1 沿用 v1.1.5 的应用标识与数据格式，使用相同正式签名可覆盖升级。
+> 升级说明：v1.2.2 沿用 v1.1.5 的应用标识与数据格式，使用相同正式签名可覆盖升级。
 
-一个用 Flutter 制作的课程表应用，主要面向大学课表这种按周、按节次排课的场景。现在重点支持 Android。
+一个用 Flutter 制作的课程表应用，主要面向大学课表这种按周、按节次排课的场景。重点支持 Android，并提供 Windows x64 解压运行版。
 
-当前版本：`v1.2.1`
+当前版本：`v1.2.2`
 
 ## 运行方式
 
@@ -43,6 +43,16 @@ Release 构建必须使用正式签名，不会回退到 debug 签名。首次�
 ```text
 build/app/outputs/flutter-apk/app-release.apk
 ```
+
+打包 Windows x64：
+
+```bash
+flutter build windows --release
+```
+
+程序位于 `build/windows/x64/runner/Release/`。分发时必须保留完整目录，包括 EXE、DLL 和 `data/`；发布页的 ZIP 已包含所需运行资源。
+
+Android 平板按完整显示屏的逻辑短边识别（至少 600dp），跟随系统的自动旋转设置；手机保持竖屏。方向策略会在显示屏尺寸变化后重新判断，分屏或窄窗口不会把平板误判成手机。首页和表单会根据实际窗口宽度切换布局。
 
 ## 项目结构
 
@@ -96,7 +106,8 @@ android/app/src/main/res/xml/schedule_widget_info.xml
 
 ## 已知限制
 
-- 目前只有 Android 经过专门适配和测试，其他平台未适配。
+- Android 是主要支持平台；Windows x64 已完成 Release 构建、启动进程检查和平台入口检查。其他平台尚未专门验证。
+- Android 桌面小组件仅在 Android 提供，Windows 版隐藏相关入口。
 - Android 桌面小组件的显示效果可能因系统桌面实现而异。
 - 从独立 M3 测试版或历史不同包名的版本迁移时，需要通过口令导出、导入课程。
 
@@ -111,6 +122,11 @@ android/app/src/main/res/xml/schedule_widget_info.xml
 ## 更新记录
 
 > 完整更新记录见 [CHANGELOG.md](CHANGELOG.md)。
+
+### v1.2.2
+
+- 优化了新UI的视觉体验
+- 修复了已知问题
 
 ### v1.2.1
 
