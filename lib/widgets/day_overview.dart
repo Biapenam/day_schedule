@@ -7,13 +7,11 @@ import 'app_components.dart';
 class DayOverview extends StatelessWidget {
   final List<Course> courses;
   final List<String> sectionStartTimes;
-  final VoidCallback onAddCourse;
   final ValueChanged<Course> onCourseTap;
   const DayOverview({
     super.key,
     required this.courses,
     required this.sectionStartTimes,
-    required this.onAddCourse,
     required this.onCourseTap,
   });
 
@@ -180,12 +178,6 @@ class DayOverview extends StatelessWidget {
               }),
             ],
           ),
-        ),
-        const SizedBox(height: 16),
-        OutlinedButton.icon(
-          onPressed: onAddCourse,
-          icon: const Icon(Icons.add_rounded, size: 18),
-          label: const Text('安排一门新课程'),
         ),
         const SizedBox(height: 24),
       ],

@@ -261,7 +261,7 @@ class _ScheduleGridState extends State<ScheduleGrid> {
     final compact = MediaQuery.sizeOf(context).width < 600;
     return Container(
       color: context.colors.surface,
-      padding: EdgeInsets.symmetric(vertical: compact ? 6 : 12),
+      padding: EdgeInsets.symmetric(vertical: compact ? 6 : 8),
       child: Row(
         children: [
           SizedBox(
