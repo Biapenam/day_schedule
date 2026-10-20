@@ -62,10 +62,12 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
   }
 
   Future<void> _loadData() async {
-    await _service.ensureMigrated();
+    final showNonCurrentFuture = _service.loadShowNonCurrentWeekCourses();
     final schedule = await _service.getActiveSchedule();
-    final courses = await _service.loadCourses();
-    final showNonCurrent = await _service.loadShowNonCurrentWeekCourses();
+    final courses = schedule == null
+        ? const <Course>[]
+        : await _service.loadCoursesFor(schedule.id);
+    final showNonCurrent = await showNonCurrentFuture;
     final start = schedule?.semesterStart;
     final totalWeeks = schedule?.totalWeeks ?? 20;
     final dailySections = schedule?.dailySections ?? 12;
@@ -408,33 +410,35 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                 child: Padding(
                   padding: const EdgeInsets.symmetric(
                     horizontal: 6,
-                    vertical: 6,
+                    vertical: 8,
                   ),
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      ConstrainedBox(
-                        constraints: const BoxConstraints(maxWidth: 92),
-                        child: FittedBox(
-                          fit: BoxFit.scaleDown,
-                          alignment: Alignment.center,
-                          child: Text(
-                            _scheduleName,
-                            maxLines: 1,
-                            style: const TextStyle(
-                              fontSize: 15,
-                              fontWeight: FontWeight.w700,
+                  child: ConstrainedBox(
+                    constraints: const BoxConstraints(maxWidth: 96),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Flexible(
+                          child: FittedBox(
+                            fit: BoxFit.scaleDown,
+                            alignment: Alignment.center,
+                            child: Text(
+                              _scheduleName,
+                              maxLines: 1,
+                              style: const TextStyle(
+                                fontSize: 15,
+                                fontWeight: FontWeight.w700,
+                              ),
                             ),
                           ),
                         ),
-                      ),
-                      const SizedBox(height: 2),
-                      Icon(
-                        Icons.unfold_more_rounded,
-                        size: 14,
-                        color: context.colors.textSecondary,
-                      ),
-                    ],
+                        const SizedBox(width: 2),
+                        Icon(
+                          Icons.expand_more_rounded,
+                          size: 16,
+                          color: context.colors.primary,
+                        ),
+                      ],
+                    ),
                   ),
                 ),
               ),

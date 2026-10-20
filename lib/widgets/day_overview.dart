@@ -106,9 +106,9 @@ class DayOverview extends StatelessWidget {
                   ),
                 ),
               ...today.map((course) {
-                final scheme = ColorScheme.fromSeed(
-                  seedColor: Color(course.colorValue),
-                  brightness: Theme.of(context).brightness,
+                final scheme = AppColors.colorSchemeFor(
+                  course.colorValue,
+                  Theme.of(context).brightness,
                 );
                 return Padding(
                   padding: const EdgeInsets.only(bottom: 8),

@@ -4,7 +4,6 @@ import 'package:uuid/uuid.dart';
 import '../models/course.dart';
 import '../models/schedule.dart';
 import '../services/course_service.dart';
-import '../services/widget_service.dart';
 import '../utils/app_colors.dart';
 import '../widgets/app_components.dart';
 
@@ -63,16 +62,16 @@ class _AddCourseScreenState extends State<AddCourseScreen> {
   }
 
   Future<void> _loadSettings() async {
-    final sections = await _service.loadDailySections();
-    final times = await _service.loadSectionStartTimes();
-    final duration = await _service.loadSectionDuration();
+    final schedule = await _service.getActiveSchedule();
     if (!mounted) return;
     setState(() {
-      _dailySections = sections;
-      _sectionStartTimes = times;
-      _sectionDuration = duration;
-      if (_startSection > sections) _startSection = 1;
-      if (_endSection > sections) _endSection = sections;
+      _dailySections = schedule?.dailySections ?? 12;
+      _sectionStartTimes =
+          schedule?.sectionStartTimes ??
+          List<String>.from(defaultSectionStartTimes);
+      _sectionDuration = schedule?.sectionDuration ?? 45;
+      if (_startSection > _dailySections) _startSection = 1;
+      if (_endSection > _dailySections) _endSection = _dailySections;
     });
   }
 
@@ -122,7 +121,7 @@ class _AddCourseScreenState extends State<AddCourseScreen> {
       } else {
         await _service.addCourse(course);
       }
-      await WidgetService().updateWidget();
+      // 返回首页后由 _refresh 统一刷新桌面小组件，避免重复同步。
       if (!mounted) return;
       Navigator.pop(context, true);
     } catch (e) {

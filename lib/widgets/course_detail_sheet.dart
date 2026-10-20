@@ -40,9 +40,9 @@ class _CourseDetailSheetState extends State<CourseDetailSheet> {
   @override
   Widget build(BuildContext context) {
     final course = widget.course;
-    final courseScheme = ColorScheme.fromSeed(
-      seedColor: Color(course.colorValue),
-      brightness: Theme.of(context).brightness,
+    final courseScheme = AppColors.colorSchemeFor(
+      course.colorValue,
+      Theme.of(context).brightness,
     );
     final color = courseScheme.primary;
     final startTime = _getStartTime(course.startSection);

@@ -105,8 +105,8 @@ class _ScheduleGridState extends State<ScheduleGrid> {
     final visibleDays = _getVisibleDays();
     final allList = widget.allCourses ?? widget.courses;
 
-    // 按天归类本周有课的课程
-    final currentWeekCourses = allList
+    // 本页课程已按周分组，只需校验周次，避免每次 build 重扫全部课程。
+    final currentWeekCourses = widget.courses
         .where((c) => c.weeks.contains(widget.weekNumber))
         .toList();
     final currentCoursesByDay = <int, List<Course>>{
@@ -122,49 +122,56 @@ class _ScheduleGridState extends State<ScheduleGrid> {
     };
 
     if (widget.showNonCurrentWeekCourses) {
-      final otherWeekCourses = allList
-          .where(
-            (c) => c.weeks.isNotEmpty && !c.weeks.contains(widget.weekNumber),
-          )
-          .toList();
+      final otherWeekCoursesByDay = <int, List<Course>>{
+        for (var day = 1; day <= visibleDays; day++) day: <Course>[],
+      };
+      for (final course in allList) {
+        if (course.weeks.isEmpty || course.weeks.contains(widget.weekNumber)) {
+          continue;
+        }
+        otherWeekCoursesByDay[course.dayOfWeek]?.add(course);
+      }
 
       for (var day = 1; day <= visibleDays; day++) {
         final dayCurrent = currentCoursesByDay[day] ?? [];
-        final dayOtherCandidates = otherWeekCourses
-            .where((c) => c.dayOfWeek == day)
-            .where(
-              (other) => !dayCurrent.any(
-                (cur) =>
-                    other.startSection <= cur.endSection &&
-                    other.endSection >= cur.startSection,
-              ),
-            )
-            .toList();
+        final candidates = <({Course course, int distance, int minWeek})>[];
+        for (final course in otherWeekCoursesByDay[day]!) {
+          final overlapsCurrent = dayCurrent.any(
+            (cur) =>
+                course.startSection <= cur.endSection &&
+                course.endSection >= cur.startSection,
+          );
+          if (overlapsCurrent) continue;
 
-        // 排序规则：距离当前周最近的排在最前；距离相同时按最小周次与节次排序
-        int distanceToWeek(Course c) {
-          if (c.weeks.isEmpty) return 999;
-          int minDist = 999;
-          for (final w in c.weeks) {
-            final diff = (w - widget.weekNumber).abs();
-            if (diff < minDist) minDist = diff;
+          var distance = 999;
+          var minWeek = 999;
+          for (final week in course.weeks) {
+            final diff = (week - widget.weekNumber).abs();
+            if (diff < distance) distance = diff;
+            if (week < minWeek) minWeek = week;
           }
-          return minDist;
+          candidates.add((
+            course: course,
+            distance: distance,
+            minWeek: minWeek,
+          ));
         }
 
-        dayOtherCandidates.sort((a, b) {
-          final distA = distanceToWeek(a);
-          final distB = distanceToWeek(b);
-          if (distA != distB) return distA.compareTo(distB);
-          final minWeekA = a.weeks.isEmpty ? 999 : a.weeks.reduce(math.min);
-          final minWeekB = b.weeks.isEmpty ? 999 : b.weeks.reduce(math.min);
-          if (minWeekA != minWeekB) return minWeekA.compareTo(minWeekB);
-          return a.startSection.compareTo(b.startSection);
+        // 排序规则：距离当前周最近的排在最前；距离相同时按最小周次与节次排序
+        candidates.sort((a, b) {
+          if (a.distance != b.distance) {
+            return a.distance.compareTo(b.distance);
+          }
+          if (a.minWeek != b.minWeek) {
+            return a.minWeek.compareTo(b.minWeek);
+          }
+          return a.course.startSection.compareTo(b.course.startSection);
         });
 
         // 贪心选择互不冲突的非本周课程
         final selectedOther = <Course>[];
-        for (final course in dayOtherCandidates) {
+        for (final candidate in candidates) {
+          final course = candidate.course;
           final hasConflict = selectedOther.any(
             (sel) =>
                 course.startSection <= sel.endSection &&
@@ -517,9 +524,9 @@ class _CourseBlock extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final colors = ColorScheme.fromSeed(
-      seedColor: Color(course.colorValue),
-      brightness: Theme.of(context).brightness,
+    final colors = AppColors.colorSchemeFor(
+      course.colorValue,
+      Theme.of(context).brightness,
     );
     final foreground = isNonCurrentWeek
         ? context.colors.textSecondary
@@ -591,98 +598,75 @@ class _CourseBlock extends StatelessWidget {
                 final teacherStyle = infoStyle.copyWith(
                   fontSize: dense ? 9 : 10,
                 );
-                final weekLabel =
-                    '[${Course.formatWeeksSummary(course.weeks)}]';
+                final weekLabel = isNonCurrentWeek
+                    ? '[${Course.formatWeeksSummary(course.weeks)}]'
+                    : '';
 
-                // Measure the full wrapped text. Metadata is no longer forced
-                // into one line when there is free height in the course block.
-                TextPainter measure(String text, TextStyle style) =>
-                    TextPainter(
-                      text: TextSpan(text: text, style: style),
-                      textDirection: Directionality.of(context),
-                      textScaler: MediaQuery.textScalerOf(context),
-                    )..layout(maxWidth: textWidth);
+                // 只测量实际会绘制的文本：普通课程不测周次，标题放不下时
+                // 也不再测量地点和教师。
+                final textDirection = Directionality.of(context);
+                final textScaler = MediaQuery.textScalerOf(context);
+                _TextMetrics measure(String text, TextStyle style) =>
+                    _TextMetrics.measure(
+                      text,
+                      style,
+                      textDirection: textDirection,
+                      textScaler: textScaler,
+                      maxWidth: textWidth,
+                    );
 
-                final namePainter = measure(name, nameStyle);
-                final weekPainter = measure(weekLabel, weekStyle);
-                final locationPainter = measure(course.location, infoStyle);
-                final teacherPainter = measure(course.teacher, teacherStyle);
-                double heightFor(TextPainter painter, int count) {
-                  final lines = painter.computeLineMetrics();
-                  if (count >= lines.length) {
-                    return painter.height.ceilToDouble();
-                  }
-                  return lines
-                      .take(count)
-                      .fold<double>(0, (sum, line) => sum + line.height)
-                      .ceilToDouble();
-                }
-
-                int fitLines(TextPainter painter, double budget) {
-                  final lines = painter.computeLineMetrics();
-                  var count = 0;
-                  for (var i = 1; i <= lines.length; i++) {
-                    if (heightFor(painter, i) > budget) break;
-                    count = i;
-                  }
-                  return count;
-                }
-
+                final nameMetrics = measure(name, nameStyle);
+                final weekMetrics = isNonCurrentWeek
+                    ? measure(weekLabel, weekStyle)
+                    : null;
                 final showWeeks =
-                    isNonCurrentWeek &&
+                    weekMetrics != null &&
                     availableHeight >=
-                        heightFor(namePainter, 1) +
-                            3 +
-                            heightFor(weekPainter, 1);
+                        nameMetrics.heightFor(1) + 3 + weekMetrics.heightFor(1);
                 final weekHeight = showWeeks
-                    ? heightFor(weekPainter, 1) + 3
+                    ? weekMetrics.heightFor(1) + 3
                     : 0.0;
                 final nameBudget = availableHeight - weekHeight;
-                final nameLines = math.max(
-                  1,
-                  fitLines(namePainter, nameBudget),
-                );
-                final nameFits =
-                    nameLines >= namePainter.computeLineMetrics().length;
-                var remaining = nameBudget - heightFor(namePainter, nameLines);
+                final nameLines = math.max(1, nameMetrics.fitLines(nameBudget));
+                final nameFits = nameLines >= nameMetrics.lineCount;
+                var remaining = nameBudget - nameMetrics.heightFor(nameLines);
                 final showMetadata =
                     nameFits &&
                     (!compact || course.endSection > course.startSection);
+                final locationMetrics =
+                    showMetadata && course.location.isNotEmpty
+                    ? measure(course.location, infoStyle)
+                    : null;
+                final teacherMetrics = showMetadata && course.teacher.isNotEmpty
+                    ? measure(course.teacher, teacherStyle)
+                    : null;
                 // Reserve a line for the teacher when possible, then allow the
                 // location to wrap. Course names retain the first claim on space.
                 final teacherReserve =
-                    showMetadata &&
-                        course.teacher.isNotEmpty &&
-                        remaining >= heightFor(teacherPainter, 1) + 3
-                    ? heightFor(teacherPainter, 1) + 3
+                    teacherMetrics != null &&
+                        remaining >= teacherMetrics.heightFor(1) + 3
+                    ? teacherMetrics.heightFor(1) + 3
                     : 0.0;
                 final locationGap = dense ? 4.0 : 5.0;
                 var locationLines = 0;
-                if (showMetadata && course.location.isNotEmpty) {
-                  locationLines = fitLines(
-                    locationPainter,
+                if (locationMetrics != null) {
+                  locationLines = locationMetrics.fitLines(
                     remaining - locationGap - teacherReserve,
                   );
                   // If reserving the teacher hides the location entirely, the
                   // classroom takes priority.
                   if (locationLines == 0) {
-                    locationLines = fitLines(
-                      locationPainter,
+                    locationLines = locationMetrics.fitLines(
                       remaining - locationGap,
                     );
                   }
                 }
                 if (locationLines > 0) {
                   remaining -=
-                      locationGap + heightFor(locationPainter, locationLines);
+                      locationGap + locationMetrics!.heightFor(locationLines);
                 }
-                final teacherLines = showMetadata && course.teacher.isNotEmpty
-                    ? fitLines(teacherPainter, remaining - 3)
-                    : 0;
-                namePainter.dispose();
-                weekPainter.dispose();
-                locationPainter.dispose();
-                teacherPainter.dispose();
+                final teacherLines =
+                    teacherMetrics?.fitLines(remaining - 3) ?? 0;
 
                 return Padding(
                   padding: EdgeInsets.all(padding),
@@ -744,5 +728,55 @@ class _CourseBlock extends StatelessWidget {
         ),
       ),
     );
+  }
+}
+
+/// 一次布局缓存行高，避免反复调用 computeLineMetrics 和前缀求和。
+class _TextMetrics {
+  _TextMetrics._(this._prefixHeights, this.lineCount, this.totalHeight);
+
+  factory _TextMetrics.measure(
+    String text,
+    TextStyle style, {
+    required TextDirection textDirection,
+    required TextScaler textScaler,
+    required double maxWidth,
+  }) {
+    final painter = TextPainter(
+      text: TextSpan(text: text, style: style),
+      textDirection: textDirection,
+      textScaler: textScaler,
+    )..layout(maxWidth: maxWidth);
+    final lines = painter.computeLineMetrics();
+    final heights = List<double>.filled(lines.length + 1, 0);
+    for (var i = 0; i < lines.length; i++) {
+      heights[i + 1] = heights[i] + lines[i].height;
+    }
+    final metrics = _TextMetrics._(
+      heights,
+      lines.length,
+      painter.height.ceilToDouble(),
+    );
+    painter.dispose();
+    return metrics;
+  }
+
+  final List<double> _prefixHeights;
+  final int lineCount;
+  final double totalHeight;
+
+  double heightFor(int count) {
+    if (count >= lineCount) return totalHeight;
+    if (count <= 0) return 0;
+    return _prefixHeights[count].ceilToDouble();
+  }
+
+  int fitLines(double budget) {
+    var count = 0;
+    for (var i = 1; i <= lineCount; i++) {
+      if (heightFor(i) > budget) break;
+      count = i;
+    }
+    return count;
   }
 }

@@ -27,9 +27,10 @@ class WidgetService {
   Future<void> updateWidget() async {
     if (!supportsHomeWidgets) return;
     try {
-      await _courseService.ensureMigrated();
       final schedule = await _courseService.getActiveSchedule();
-      final courses = await _courseService.loadCourses();
+      final courses = schedule == null
+          ? const <Course>[]
+          : await _courseService.loadCoursesFor(schedule.id);
       final semesterStart = schedule?.semesterStart;
       final totalWeeks = schedule?.totalWeeks ?? 20;
       final startTimes =
@@ -51,24 +52,33 @@ class WidgetService {
       final daysToGenerate = semesterStart == null ? 14 : totalWeeks * 7;
       final coursesByDate = <String, List<Map<String, String>>>{};
 
+      // 先按星期分组并排好序，避免为学期里的每一天重新扫描、排序全部课程。
+      final coursesByWeekday = <int, List<Course>>{};
+      for (final course in courses) {
+        coursesByWeekday.putIfAbsent(course.dayOfWeek, () => []).add(course);
+      }
+      for (final dayCourses in coursesByWeekday.values) {
+        dayCourses.sort((a, b) => a.startSection.compareTo(b.startSection));
+      }
+      final widgetMaps = <Course, Map<String, String>>{};
+      Map<String, String> widgetMapFor(Course course) => widgetMaps.putIfAbsent(
+        course,
+        () => _courseToWidgetMap(course, startTimes, duration),
+      );
+
       List<Map<String, String>> buildCourseList(DateTime date) {
         final week = semesterStart == null
             ? 1
             : _courseService.currentWeek(semesterStart, now: date);
         final inSemester =
             semesterStart == null || (week >= 1 && week <= totalWeeks);
-        if (!inSemester) return <Map<String, String>>[];
+        if (!inSemester) return const <Map<String, String>>[];
 
-        final dayCourses =
-            courses
-                .where(
-                  (c) => c.dayOfWeek == date.weekday && c.weeks.contains(week),
-                )
-                .toList()
-              ..sort((a, b) => a.startSection.compareTo(b.startSection));
-        return dayCourses
-            .map((course) => _courseToWidgetMap(course, startTimes, duration))
-            .toList();
+        final dayCourses = coursesByWeekday[date.weekday] ?? const <Course>[];
+        return [
+          for (final course in dayCourses)
+            if (course.weeks.contains(week)) widgetMapFor(course),
+        ];
       }
 
       for (var offset = 0; offset < daysToGenerate; offset++) {

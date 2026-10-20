@@ -203,12 +203,14 @@ class CourseService {
   Future<Schedule?> getActiveSchedule() async {
     final schedules = await loadSchedules();
     if (schedules.isEmpty) return null;
-    final id = await getActiveScheduleId();
-    if (id == null) return schedules.first;
-    return schedules.firstWhere(
-      (s) => s.id == id,
-      orElse: () => schedules.first,
-    );
+    final prefs = await SharedPreferences.getInstance();
+    final storedId = prefs.getString(_activeScheduleIdKey);
+    for (final schedule in schedules) {
+      if (schedule.id == storedId) return schedule;
+    }
+    final fallback = schedules.first;
+    await prefs.setString(_activeScheduleIdKey, fallback.id);
+    return fallback;
   }
 
   /// 切换当前激活课表
@@ -254,8 +256,10 @@ class CourseService {
       final prefs = await SharedPreferences.getInstance();
       await prefs.remove(_coursesKey(id));
       await prefs.remove(_coursesBackupKey(id));
-      final activeId = await getActiveScheduleId();
-      if (activeId == id) await setActiveSchedule(remaining.first.id);
+      final activeId = prefs.getString(_activeScheduleIdKey);
+      if (activeId == null || !remaining.any((s) => s.id == activeId)) {
+        await prefs.setString(_activeScheduleIdKey, remaining.first.id);
+      }
     });
   }
 
@@ -339,9 +343,9 @@ class CourseService {
 
   Future<void> addCourse(Course course) async {
     await _serializeWrite(() async {
-      final courses = await loadCourses();
       final id = await getActiveScheduleId();
       if (id == null) return;
+      final courses = await loadCoursesFor(id);
       courses.add(course);
       final prefs = await SharedPreferences.getInstance();
       await _setStringWithBackup(
@@ -355,9 +359,9 @@ class CourseService {
 
   Future<void> updateCourse(Course updated) async {
     await _serializeWrite(() async {
-      final courses = await loadCourses();
       final id = await getActiveScheduleId();
       if (id == null) return;
+      final courses = await loadCoursesFor(id);
       final idx = courses.indexWhere((c) => c.id == updated.id);
       if (idx != -1) courses[idx] = updated;
       final prefs = await SharedPreferences.getInstance();
@@ -372,9 +376,9 @@ class CourseService {
 
   Future<void> deleteCourse(String id) async {
     await _serializeWrite(() async {
-      final courses = await loadCourses();
       final activeId = await getActiveScheduleId();
       if (activeId == null) return;
+      final courses = await loadCoursesFor(activeId);
       courses.removeWhere((c) => c.id == id);
       final prefs = await SharedPreferences.getInstance();
       await _setStringWithBackup(
@@ -437,6 +441,35 @@ class CourseService {
     final s = await getActiveSchedule();
     if (s == null) return;
     await saveScheduleMeta(s.copyWith(sectionDuration: minutes));
+  }
+
+  /// 一次写入多组课表设置，避免保存设置时反复读取、覆盖同一份 JSON。
+  Future<void> saveScheduleSettings({
+    DateTime? semesterStart,
+    int? totalWeeks,
+    int? dailySections,
+    int? sectionDuration,
+    List<String>? sectionStartTimes,
+  }) async {
+    await _serializeWrite(() async {
+      final schedules = await loadSchedules();
+      if (schedules.isEmpty) return;
+      final prefs = await SharedPreferences.getInstance();
+      final storedId = prefs.getString(_activeScheduleIdKey);
+      var index = schedules.indexWhere((s) => s.id == storedId);
+      if (index == -1) {
+        index = 0;
+        await prefs.setString(_activeScheduleIdKey, schedules.first.id);
+      }
+      schedules[index] = schedules[index].copyWith(
+        semesterStart: semesterStart,
+        totalWeeks: totalWeeks,
+        dailySections: dailySections,
+        sectionDuration: sectionDuration,
+        sectionStartTimes: sectionStartTimes,
+      );
+      await _saveSchedules(schedules);
+    });
   }
 
   // ─── 非本周课程显示设置 ──────────────────────────────────

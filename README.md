@@ -1,12 +1,12 @@
 # Day Schedule
 
-[![release](https://img.shields.io/badge/release-v1.2.3-0d8bdc?style=flat-square)](CHANGELOG.md#v123) [![Flutter](https://img.shields.io/badge/Flutter-3.41.9-02569B?logo=flutter&logoColor=white&style=flat-square)](.github/workflows/ci.yml) [![license](https://img.shields.io/badge/license-PolyForm_Noncommercial_1.0.0-f47c20?style=flat-square)](LICENSE) [![Android](https://img.shields.io/badge/Android-supported-3ddc84?logo=android&logoColor=white&style=flat-square)](#)
+[![release](https://img.shields.io/badge/release-v1.2.4-0d8bdc?style=flat-square)](CHANGELOG.md#v124) [![Flutter](https://img.shields.io/badge/Flutter-3.41.9-02569B?logo=flutter&logoColor=white&style=flat-square)](.github/workflows/ci.yml) [![license](https://img.shields.io/badge/license-PolyForm_Noncommercial_1.0.0-f47c20?style=flat-square)](LICENSE) [![Android](https://img.shields.io/badge/Android-supported-3ddc84?logo=android&logoColor=white&style=flat-square)](#)
 
-> 升级说明：v1.2.3 沿用 v1.1.5 的应用标识与数据格式，使用相同正式签名可覆盖升级。
+> 升级说明：v1.2.4 沿用 v1.1.5 的应用标识与数据格式，使用相同正式签名可覆盖升级。
 
 一个用 Flutter 制作的课程表应用，主要面向大学课表这种按周、按节次排课的场景。重点支持 Android，并提供 Windows x64 解压运行版。
 
-当前版本：`v1.2.3`
+当前版本：`v1.2.4`
 
 ## 运行方式
 
@@ -122,6 +122,11 @@ android/app/src/main/res/xml/schedule_widget_info.xml
 ## 更新记录
 
 > 完整更新记录见 [CHANGELOG.md](CHANGELOG.md)。
+
+### v1.2.4
+
+- 优化了大屏UI的视觉体验
+- 优化了性能开销
 
 ### v1.2.3
 

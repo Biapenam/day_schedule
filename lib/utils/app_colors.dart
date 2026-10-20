@@ -7,6 +7,20 @@ extension ScheduleColors on BuildContext {
 
 abstract final class AppColors {
   static const primary = Color(0xFF356A51);
+
+  static final Map<int, ColorScheme> _courseSchemes = {};
+
+  /// fromSeed 会生成整套色板，课程块每次 build 都调用代价很高，按颜色缓存。
+  static ColorScheme colorSchemeFor(int colorValue, Brightness brightness) {
+    final key = colorValue * 2 + (brightness == Brightness.dark ? 1 : 0);
+    final cached = _courseSchemes[key];
+    if (cached != null) return cached;
+    if (_courseSchemes.length >= 128) _courseSchemes.clear();
+    return _courseSchemes[key] = ColorScheme.fromSeed(
+      seedColor: Color(colorValue),
+      brightness: brightness,
+    );
+  }
 }
 
 class AppPalette {

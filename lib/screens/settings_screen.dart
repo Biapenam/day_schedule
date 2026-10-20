@@ -46,15 +46,16 @@ class _SettingsScreenState extends State<SettingsScreen> {
   }
 
   Future<void> _load() async {
-    await _service.ensureMigrated();
+    final showNonCurrentFuture = _service.loadShowNonCurrentWeekCourses();
     final schedule = await _service.getActiveSchedule();
     final start = schedule?.semesterStart;
     final weeks = schedule?.totalWeeks ?? 20;
     final sections = schedule?.dailySections ?? 12;
     final duration = schedule?.sectionDuration ?? 45;
     final times =
-        schedule?.sectionStartTimes ?? await _service.loadSectionStartTimes();
-    final showNonCurrent = await _service.loadShowNonCurrentWeekCourses();
+        schedule?.sectionStartTimes ??
+        List<String>.from(defaultSectionStartTimes);
+    final showNonCurrent = await showNonCurrentFuture;
     if (!mounted) return;
     setState(() {
       _scheduleName = schedule?.name ?? '我的课表';
@@ -174,8 +175,14 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 padding: const EdgeInsets.all(20),
                 children: const [
                   _ChangelogEntry(
-                    version: 'v1.2.3',
+                    version: 'v1.2.4',
                     isLatest: true,
+                    changes: ['优化了大屏UI的视觉体验', '优化了性能开销'],
+                  ),
+                  SizedBox(height: 16),
+                  _ChangelogEntry(
+                    version: 'v1.2.3',
+                    isLatest: false,
                     changes: ['优化了大屏UI的视觉体验'],
                   ),
                   SizedBox(height: 16),
@@ -288,15 +295,15 @@ class _SettingsScreenState extends State<SettingsScreen> {
   Future<void> _save() async {
     setState(() => _saving = true);
     try {
-      if (_semesterStart != null) {
-        await _service.saveSemesterStart(_semesterStart!);
-      }
-      await _service.saveTotalWeeks(_totalWeeks);
-      await _service.saveDailySections(_dailySections);
-      await _service.saveSectionDuration(_sectionDuration);
-      await _service.saveSectionStartTimes(_sectionStartTimes);
+      await _service.saveScheduleSettings(
+        semesterStart: _semesterStart,
+        totalWeeks: _totalWeeks,
+        dailySections: _dailySections,
+        sectionDuration: _sectionDuration,
+        sectionStartTimes: _sectionStartTimes,
+      );
       await _service.saveShowNonCurrentWeekCourses(_showNonCurrentWeekCourses);
-      await WidgetService().updateWidget();
+      // 首页在返回后会重新加载并同步桌面小组件，无需在这里重复刷新。
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
@@ -612,7 +619,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                       children: [
                         _buildInfoTile('应用名称', 'Day Schedule'),
                         const Divider(height: 1),
-                        _buildInfoTile('版本', '1.2.3'),
+                        _buildInfoTile('版本', '1.2.4'),
                         const Divider(height: 1),
                         _buildInfoTile('开发者', 'Sora'),
                         const Divider(height: 1),
