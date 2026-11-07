@@ -21,7 +21,7 @@ class HomeScreen extends StatefulWidget {
   State<HomeScreen> createState() => _HomeScreenState();
 }
 
-class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
+class _HomeScreenState extends State<HomeScreen> {
   final CourseService _service = CourseService();
 
   Map<int, List<Course>> _coursesByWeek = {};
@@ -44,18 +44,14 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
 
   PageController? _pageController;
   final ValueNotifier<int> _selectedWeekNotifier = ValueNotifier(1);
-  late AnimationController _fabController;
-
   @override
   void initState() {
     super.initState();
-    _fabController = AnimationController(vsync: this, duration: 300.ms);
     _loadData();
   }
 
   @override
   void dispose() {
-    _fabController.dispose();
     _pageController?.dispose();
     _selectedWeekNotifier.dispose();
     super.dispose();
@@ -123,11 +119,6 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
       _scheduleName = schedule?.name ?? '我的课表';
       _loading = false;
     });
-    if (MediaQuery.disableAnimationsOf(context)) {
-      _fabController.value = 1;
-    } else {
-      _fabController.forward();
-    }
     await WidgetService().updateWidget();
   }
 
@@ -321,6 +312,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
               ? null
               : NavigationBar(
                   selectedIndex: 0,
+                  height: compact ? 64 : 80,
                   onDestinationSelected: _onNavigate,
                   destinations: const [
                     NavigationDestination(
@@ -337,19 +329,6 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                       label: '设置',
                     ),
                   ],
-                ),
-          floatingActionButton: wide
-              ? null
-              : ScaleTransition(
-                  scale: CurvedAnimation(
-                    parent: _fabController,
-                    curve: Curves.easeOutCubic,
-                  ),
-                  child: FloatingActionButton.extended(
-                    onPressed: _openAddCourse,
-                    icon: const Icon(Icons.add_rounded),
-                    label: const Text('添加课程'),
-                  ),
                 ),
         );
       },
@@ -555,53 +534,56 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
   Widget _buildHeader(bool compact) {
     final now = DateTime.now();
     if (compact) {
-      return Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 12),
-        child: Row(
-          children: [
-            Expanded(
-              child: Tooltip(
-                message: _scheduleName,
-                child: InkWell(
-                  onTap: _showScheduleManager,
-                  borderRadius: BorderRadius.circular(12),
-                  child: ConstrainedBox(
-                    constraints: const BoxConstraints(minHeight: 48),
-                    child: Row(
-                      children: [
-                        Flexible(
-                          child: Text(
-                            _scheduleName,
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                            style: const TextStyle(
-                              fontSize: 20,
-                              fontWeight: FontWeight.w600,
-                            ),
+      return Row(
+        children: [
+          Expanded(
+            child: Tooltip(
+              message: _scheduleName,
+              child: InkWell(
+                onTap: _showScheduleManager,
+                borderRadius: BorderRadius.circular(12),
+                child: ConstrainedBox(
+                  constraints: const BoxConstraints(minHeight: 48),
+                  child: Row(
+                    children: [
+                      Flexible(
+                        child: Text(
+                          _scheduleName,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: const TextStyle(
+                            fontSize: 20,
+                            fontWeight: FontWeight.w600,
                           ),
                         ),
-                        const SizedBox(width: 4),
-                        Icon(
-                          Icons.expand_more_rounded,
-                          size: 20,
-                          color: context.colors.primary,
-                        ),
-                      ],
-                    ),
+                      ),
+                      const SizedBox(width: 4),
+                      Icon(
+                        Icons.expand_more_rounded,
+                        size: 20,
+                        color: context.colors.primary,
+                      ),
+                    ],
                   ),
                 ),
               ),
             ),
-            const SizedBox(width: 8),
-            Text(
-              '${now.month}/${now.day} ${_weekdays[now.weekday].replaceFirst('星期', '周')}',
-              style: TextStyle(
-                fontSize: 12,
-                color: context.colors.textSecondary,
-              ),
+          ),
+          const SizedBox(width: 8),
+          Text(
+            '${now.month}/${now.day} ${_weekdays[now.weekday].replaceFirst('星期', '周')}',
+            style: TextStyle(
+              fontSize: 12,
+              color: context.colors.textSecondary,
             ),
-          ],
-        ),
+          ),
+          const SizedBox(width: 2),
+          IconButton.filledTonal(
+            tooltip: '添加课程',
+            onPressed: _openAddCourse,
+            icon: const Icon(Icons.add_rounded),
+          ),
+        ],
       );
     }
 

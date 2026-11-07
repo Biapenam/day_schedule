@@ -8,6 +8,7 @@ import '../utils/app_colors.dart';
 
 const double _cellHeight = 68.0;
 const double _denseCellHeight = 84.0;
+const double _minimumCompactCellHeight = 52.0;
 const double _sectionLabelWidth = 44.0;
 
 class ScheduleGrid extends StatefulWidget {
@@ -187,17 +188,30 @@ class _ScheduleGridState extends State<ScheduleGrid> {
 
     return LayoutBuilder(
       builder: (context, constraints) {
-        // 平板限制最大列宽；窄屏七列使用紧凑排版和更高行高保留信息。
+        // 手机按可用高度调整节次行高；七天窄列继续使用紧凑卡片样式。
+        final compact = constraints.maxWidth < 600;
         final denseSevenDays =
             visibleDays == 7 &&
             (constraints.maxWidth - _sectionLabelWidth) / visibleDays < 60;
         final labelWidth = denseSevenDays ? 36.0 : _sectionLabelWidth;
         final availableForDays = constraints.maxWidth - labelWidth;
         final dayWidth = availableForDays / visibleDays;
-        // Give wrapped metadata enough vertical room, including enlarged text.
         final textScale = MediaQuery.textScalerOf(context).scale(10.5) / 10.5;
-        final cellHeight = denseSevenDays
-            ? _denseCellHeight * math.max(1.0, textScale)
+        final scaledText = math.max(1.0, textScale);
+        final preferredCellHeight =
+            (denseSevenDays ? _denseCellHeight : _cellHeight) * scaledText;
+        // 以约 360×840dp 的 9:21 手机为基准，目标容纳 11 节并保留 52dp
+        // 最小行高；屏幕较矮或字号较大时，由滚动承接超出内容。
+        final fittedCellHeight =
+            math.max(0.0, constraints.maxHeight - 49) /
+            math.max(1, widget.dailySections);
+        final cellHeight = compact
+            ? math.max(
+                _minimumCompactCellHeight * scaledText,
+                math.min(preferredCellHeight, fittedCellHeight),
+              )
+            : denseSevenDays
+            ? preferredCellHeight
             : _cellHeight;
         // 目标单列最大宽度（px）。课程块内部已按列宽自适应字号。
         const targetMaxDayWidth = 180.0;
@@ -228,13 +242,12 @@ class _ScheduleGridState extends State<ScheduleGrid> {
                       weekMonday,
                       visibleDays,
                       labelWidth,
+                      compact,
                     ),
                     Expanded(
                       child: SingleChildScrollView(
                         padding: EdgeInsets.only(
-                          bottom: MediaQuery.sizeOf(context).width < 1000
-                              ? 88
-                              : 12,
+                          bottom: compact ? 0 : 12,
                         ),
                         child: _buildBody(
                           todayWeekday,
@@ -263,12 +276,12 @@ class _ScheduleGridState extends State<ScheduleGrid> {
     DateTime weekMonday,
     int visibleDays,
     double labelWidth,
+    bool compact,
   ) {
     const dayChars = ['', '一', '二', '三', '四', '五', '六', '日'];
-    final compact = MediaQuery.sizeOf(context).width < 600;
     return Container(
       color: context.colors.surface,
-      padding: EdgeInsets.symmetric(vertical: compact ? 6 : 8),
+      padding: EdgeInsets.symmetric(vertical: compact ? 4 : 8),
       child: Row(
         children: [
           SizedBox(
@@ -293,14 +306,14 @@ class _ScheduleGridState extends State<ScheduleGrid> {
                       Text(
                         '周${dayChars[day]}',
                         style: TextStyle(
-                          fontSize: 11,
+                          fontSize: compact ? 10 : 11,
                           color: context.colors.textSecondary,
                         ),
                       ),
-                      SizedBox(height: compact ? 2 : 6),
+                      SizedBox(height: compact ? 1 : 6),
                       Container(
-                        width: compact ? 28 : 32,
-                        height: compact ? 28 : 32,
+                        width: compact ? 24 : 32,
+                        height: compact ? 24 : 32,
                         decoration: BoxDecoration(
                           color: isToday
                               ? context.colors.primary
@@ -311,7 +324,7 @@ class _ScheduleGridState extends State<ScheduleGrid> {
                         child: Text(
                           '${date.day}',
                           style: TextStyle(
-                            fontSize: 16,
+                            fontSize: compact ? 14 : 16,
                             fontWeight: FontWeight.w600,
                             color: isToday
                                 ? context.colors.onPrimary
